@@ -1,0 +1,48 @@
+package main
+
+import (
+	"context"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/joho/godotenv"
+	"github.com/redis/go-redis/v9"
+	"github.com/sukhmai/widget/backend/internal/postgres"
+)
+
+func main() {
+	_ = godotenv.Load() // loads .env if present; no-op in production
+
+	ctx := context.Background()
+
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	pool, err := postgres.New(ctx, dsn)
+	if err != nil {
+		log.Fatalf("postgres: %v", err)
+	}
+	defer pool.Close()
+
+	redisURL := os.Getenv("REDIS_URL")
+	if redisURL == "" {
+		redisURL = "redis://localhost:6379"
+	}
+	redisOpts, err := redis.ParseURL(redisURL)
+	if err != nil {
+		log.Fatalf("redis: %v", err)
+	}
+	rdb := redis.NewClient(redisOpts)
+	defer rdb.Close()
+
+	r := chi.NewRouter()
+	r.Get("/healthz", func(w http.ResponseWriter, req *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", r))
+}

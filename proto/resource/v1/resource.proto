@@ -1,0 +1,189 @@
+syntax = "proto3";
+
+package resource.v1;
+
+option go_package = "github.com/sukhmai/widget/backend/internal/gen/resource/v1;resourcev1";
+
+// MusicTrackMetadata is stored in the resource.metadata JSONB column when
+// source = "spotify" or "apple_music" and fetched = true.
+// embed_url is set only for Spotify (Apple Music has no embeddable player URL).
+// deezer_track_id is populated for both via a duration-matched Deezer search.
+message MusicTrackMetadata {
+  string embed_url       = 1;
+  string title           = 2;
+  string artist          = 3;
+  string album           = 4;
+  string cover_url       = 5;
+  int32  duration_ms     = 6;
+  string deezer_track_id = 7;
+}
+
+// MovieMetadata is stored in the resource.metadata JSONB column when
+// source = "letterboxd" or "imdb" and fetched = true. Content comes from TMDB.
+// letterboxd_rating is scraped best-effort from the Letterboxd page (0 = unavailable).
+// letterboxd_url and imdb_url are set only for their respective sources.
+message MovieMetadata {
+  string poster_url        = 1;
+  string title             = 2;
+  int32  release_year      = 3;
+  string director          = 4;
+  repeated string genres   = 5;
+  int32  runtime_minutes   = 6;
+  string overview          = 7;
+  double letterboxd_rating = 8; // out of 5; 0 = unavailable
+  string letterboxd_url    = 9; // canonical letterboxd.com film URL
+  string tmdb_id           = 10;
+  string imdb_url          = 11; // canonical imdb.com/title/tt... URL
+}
+
+// BookMetadata is stored in the resource.metadata JSONB column when
+// source = "goodreads" and fetched = true. Content comes from Open Library.
+message BookMetadata {
+  string cover_url         = 1;
+  string title             = 2;
+  string author            = 3;
+  int32  publication_year  = 4;
+  string goodreads_url     = 5;
+  string open_library_id   = 6;
+}
+
+// TweetMetadata is stored in the resource.metadata JSONB column when
+// source = "x" and fetched = true. Content comes from the X oEmbed endpoint
+// (no API key required). tweet_text is stripped of HTML tags.
+message TweetMetadata {
+  string tweet_url   = 1;
+  string text        = 2;
+  string author_name = 3;
+  string handle      = 4; // username without the @ prefix
+}
+
+// BlueskyPostMetadata is stored in the resource.metadata JSONB column when
+// source = "bluesky" and fetched = true. Content comes from the Bluesky oEmbed
+// endpoint (embed.bsky.app/oembed) — no API key required.
+message BlueskyPostMetadata {
+  string post_url    = 1;
+  string text        = 2;
+  string author_name = 3;
+  string handle      = 4; // username without the @ prefix
+}
+
+// WikipediaMetadata is stored in the resource.metadata JSONB column when
+// source = "wikipedia" and fetched = true. Content comes from the Wikipedia
+// REST API (no API key required). Supports all language editions.
+message WikipediaMetadata {
+  string thumbnail_url  = 1;
+  string title          = 2;
+  string description    = 3; // short description blurb
+  string wikipedia_url  = 4; // canonical desktop URL
+  string extract        = 5; // intro paragraph (plain text) shown as article body
+}
+
+// SubstackPostMetadata is stored in the resource.metadata JSONB column when
+// source = "substack" and fetched = true. Content comes from the public
+// Substack API (no API key required). cover_url is empty when the post has
+// no cover image.
+message SubstackPostMetadata {
+  string title            = 1;
+  string author_name      = 2;
+  string publication_name = 3; // derived from subdomain, title-cased
+  string cover_url        = 4; // empty string when API returns null
+  string canonical_url    = 5;
+  string subtitle         = 6; // post subtitle; stored but not shown on card
+  string body_text        = 7; // full post body as plain text, stripped from body_html
+}
+
+// GenericMetadata is stored in the resource.metadata JSONB column when
+// source = "generic" and fetched = true — i.e. for any URL we don't have a
+// dedicated source for. Content is scraped best-effort from the page's
+// OpenGraph / standard meta tags; every field degrades to empty rather than
+// failing. is_article is set when og:type == "article", and body_text holds the
+// full readable article body (extracted via readability) only in that case.
+message GenericMetadata {
+  string url         = 1; // canonical/og:url, falls back to the fetched url
+  string title       = 2; // og:title || <title>
+  string description = 3; // og:description || meta[name=description]
+  string image_url   = 4; // og:image; "" when the page has no hero image
+  string favicon_url = 5; // resolved favicon (brand mark + cover fallback)
+  string site_name   = 6; // og:site_name || hostname
+  string author      = 7; // article:author (articles only)
+  bool   is_article  = 8; // og:type == "article"
+  string body_text   = 9; // full readable body as plain text (articles only)
+}
+
+// YouTubeVideoMetadata is stored in the resource.metadata JSONB column when
+// source = "youtube" and fetched = true. Content comes from the YouTube oEmbed
+// endpoint (youtube.com/oembed) — no API key required.
+message YouTubeVideoMetadata {
+  string video_id     = 1; // bare video ID extracted from the watch URL
+  string title        = 2;
+  string channel_name = 3; // oEmbed author_name
+  string cover_url    = 4; // oEmbed thumbnail_url
+  string embed_url    = 5; // https://www.youtube.com/embed/{video_id}
+}
+
+// SteamGameMetadata is stored in the resource.metadata JSONB column when
+// source = "steam" and fetched = true. Content comes from the Steam Store API
+// (store.steampowered.com/api/appdetails) — no API key required.
+message SteamGameMetadata {
+  string cover_url     = 1; // header_image from Steam API
+  string title         = 2; // game name
+  string developer     = 3; // first entry in developers[]
+  string publisher     = 4; // first entry in publishers[]
+  int32  release_year  = 5; // parsed from release_date.date
+  string steam_url     = 6; // canonical store.steampowered.com/app/... URL
+  string app_id        = 7; // Steam app ID string
+}
+
+// TikTokVideoMetadata is stored in the resource.metadata JSONB column when
+// source = "tiktok" and fetched = true. Content comes from the TikTok oEmbed
+// endpoint (tiktok.com/oembed) — no API key required. creator is the @handle
+// extracted from oEmbed author_url.
+message TikTokVideoMetadata {
+  string cover_url   = 1;
+  string title       = 2;
+  string creator     = 3; // @handle e.g. "@charlidamelio"
+  string tiktok_url  = 4; // canonical tiktok.com/@user/video/... URL
+  string embed_url   = 5; // https://www.tiktok.com/embed/v2/{video_id}
+}
+
+// AnimeMetadata is stored in the resource.metadata JSONB column when
+// source = "myanimelist" or "anilist" and fetched = true. Content comes from
+// the Jikan v4 API (api.jikan.moe) for MAL links, or the AniList GraphQL API
+// (graphql.anilist.co) for AniList links — both are free with no API key.
+// studio holds the production studio (anime) or serialization (manga); episode_count
+// holds episodes (anime) or chapters (manga), and is 0 when unknown.
+message AnimeMetadata {
+  string cover_url     = 1;
+  string title         = 2;
+  int32  release_year  = 3;
+  string studio        = 4;
+  int32  episode_count = 5;
+  string source_url    = 6; // canonical URL on MAL or AniList
+}
+
+// RedditPostMetadata is stored in the resource.metadata JSONB column when
+// source = "reddit" and fetched = true. Content comes from the Reddit public
+// JSON API (append .json to any post URL) — no API key required.
+// redd.it short links are resolved to canonical reddit.com URLs before fetching.
+message RedditPostMetadata {
+  string title      = 1;
+  string author     = 2; // username without the u/ prefix
+  string subreddit  = 3; // subreddit name without the r/ prefix
+  string body_text  = 4; // selftext (plain text); empty for link posts
+  string cover_url  = 5; // preview image if available; shown in full view only
+  string reddit_url = 6; // canonical reddit.com permalink
+}
+
+// InstagramPostMetadata is stored in the resource.metadata JSONB column when
+// source = "instagram" and fetched = true. Content comes from the Instagram
+// oEmbed endpoint (graph.facebook.com/v22.0/instagram_oembed) — requires a
+// Meta app access token. is_reel is true for /reel/... URLs; embed_url is only
+// set when is_reel = true (instagram.com/reel/{shortcode}/embed/).
+message InstagramPostMetadata {
+  string post_url    = 1;
+  string cover_url   = 2;
+  string handle      = 3; // @username extracted from oEmbed author_url
+  string author_name = 4;
+  bool   is_reel     = 5;
+  string embed_url   = 6; // set only when is_reel = true
+}
