@@ -53,7 +53,9 @@ public nonisolated struct User_V1_RegisterUserResponse: Sendable {
   public init() {}
 }
 
-/// MatchContacts resolves which of the caller's contacts have registered.
+/// MatchContacts resolves which of the caller's contacts have registered. Each
+/// match also implicitly subscribes the caller to the matched user's atoms, so
+/// the caller's widget can be pushed to when that friend posts.
 public nonisolated struct User_V1_MatchContactsRequest: Sendable {
   // SwiftProtobuf.Message conformance is added in an extension below. See the
   // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
@@ -61,6 +63,9 @@ public nonisolated struct User_V1_MatchContactsRequest: Sendable {
 
   /// hashes of the numbers in the contact book
   public var phoneHashes: [Data] = []
+
+  /// caller's own device UUID; empty skips auto-subscribe
+  public var subscriberID: String = String()
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -90,6 +95,36 @@ public nonisolated struct User_V1_Match: Sendable {
 
   /// the matched user's device UUID
   public var deviceID: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+/// RegisterPushToken stores this device's APNs token so the backend can push a
+/// silent "refresh your widget" notification when a friend it's subscribed to
+/// posts. Independent of MatchContacts since the token can be (re-)issued by
+/// the OS at any time.
+public nonisolated struct User_V1_RegisterPushTokenRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// device UUID (IDFV); required
+  public var deviceID: String = String()
+
+  /// hex-encoded APNs device token; required
+  public var pushToken: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct User_V1_RegisterPushTokenResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
 
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
@@ -156,7 +191,7 @@ nonisolated extension User_V1_RegisterUserResponse: SwiftProtobuf.Message, Swift
 
 nonisolated extension User_V1_MatchContactsRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".MatchContactsRequest"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}phone_hashes\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}phone_hashes\0\u{3}subscriber_id\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -165,6 +200,7 @@ nonisolated extension User_V1_MatchContactsRequest: SwiftProtobuf.Message, Swift
       // enabled. https://github.com/apple/swift-protobuf/issues/1034
       switch fieldNumber {
       case 1: try { try decoder.decodeRepeatedBytesField(value: &self.phoneHashes) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.subscriberID) }()
       default: break
       }
     }
@@ -174,11 +210,15 @@ nonisolated extension User_V1_MatchContactsRequest: SwiftProtobuf.Message, Swift
     if !self.phoneHashes.isEmpty {
       try visitor.visitRepeatedBytesField(value: self.phoneHashes, fieldNumber: 1)
     }
+    if !self.subscriberID.isEmpty {
+      try visitor.visitSingularStringField(value: self.subscriberID, fieldNumber: 2)
+    }
     try unknownFields.traverse(visitor: &visitor)
   }
 
   public static func ==(lhs: User_V1_MatchContactsRequest, rhs: User_V1_MatchContactsRequest) -> Bool {
     if lhs.phoneHashes != rhs.phoneHashes {return false}
+    if lhs.subscriberID != rhs.subscriberID {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }
@@ -244,6 +284,60 @@ nonisolated extension User_V1_Match: SwiftProtobuf.Message, SwiftProtobuf._Messa
   public static func ==(lhs: User_V1_Match, rhs: User_V1_Match) -> Bool {
     if lhs.phoneHash != rhs.phoneHash {return false}
     if lhs.deviceID != rhs.deviceID {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension User_V1_RegisterPushTokenRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RegisterPushTokenRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}device_id\0\u{3}push_token\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.deviceID) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.pushToken) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.deviceID.isEmpty {
+      try visitor.visitSingularStringField(value: self.deviceID, fieldNumber: 1)
+    }
+    if !self.pushToken.isEmpty {
+      try visitor.visitSingularStringField(value: self.pushToken, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: User_V1_RegisterPushTokenRequest, rhs: User_V1_RegisterPushTokenRequest) -> Bool {
+    if lhs.deviceID != rhs.deviceID {return false}
+    if lhs.pushToken != rhs.pushToken {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension User_V1_RegisterPushTokenResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".RegisterPushTokenResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap()
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    // Load everything into unknown fields
+    while try decoder.nextFieldNumber() != nil {}
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: User_V1_RegisterPushTokenResponse, rhs: User_V1_RegisterPushTokenResponse) -> Bool {
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

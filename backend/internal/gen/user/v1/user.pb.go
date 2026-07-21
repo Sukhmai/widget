@@ -111,10 +111,13 @@ func (*RegisterUserResponse) Descriptor() ([]byte, []int) {
 	return file_user_v1_user_proto_rawDescGZIP(), []int{1}
 }
 
-// MatchContacts resolves which of the caller's contacts have registered.
+// MatchContacts resolves which of the caller's contacts have registered. Each
+// match also implicitly subscribes the caller to the matched user's atoms, so
+// the caller's widget can be pushed to when that friend posts.
 type MatchContactsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	PhoneHashes   [][]byte               `protobuf:"bytes,1,rep,name=phone_hashes,json=phoneHashes,proto3" json:"phone_hashes,omitempty"` // hashes of the numbers in the contact book
+	PhoneHashes   [][]byte               `protobuf:"bytes,1,rep,name=phone_hashes,json=phoneHashes,proto3" json:"phone_hashes,omitempty"`    // hashes of the numbers in the contact book
+	SubscriberId  string                 `protobuf:"bytes,2,opt,name=subscriber_id,json=subscriberId,proto3" json:"subscriber_id,omitempty"` // caller's own device UUID; empty skips auto-subscribe
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -154,6 +157,13 @@ func (x *MatchContactsRequest) GetPhoneHashes() [][]byte {
 		return x.PhoneHashes
 	}
 	return nil
+}
+
+func (x *MatchContactsRequest) GetSubscriberId() string {
+	if x != nil {
+		return x.SubscriberId
+	}
+	return ""
 }
 
 type MatchContactsResponse struct {
@@ -252,6 +262,98 @@ func (x *Match) GetDeviceId() string {
 	return ""
 }
 
+// RegisterPushToken stores this device's APNs token so the backend can push a
+// silent "refresh your widget" notification when a friend it's subscribed to
+// posts. Independent of MatchContacts since the token can be (re-)issued by
+// the OS at any time.
+type RegisterPushTokenRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	DeviceId      string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`    // device UUID (IDFV); required
+	PushToken     string                 `protobuf:"bytes,2,opt,name=push_token,json=pushToken,proto3" json:"push_token,omitempty"` // hex-encoded APNs device token; required
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterPushTokenRequest) Reset() {
+	*x = RegisterPushTokenRequest{}
+	mi := &file_user_v1_user_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterPushTokenRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterPushTokenRequest) ProtoMessage() {}
+
+func (x *RegisterPushTokenRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterPushTokenRequest.ProtoReflect.Descriptor instead.
+func (*RegisterPushTokenRequest) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *RegisterPushTokenRequest) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *RegisterPushTokenRequest) GetPushToken() string {
+	if x != nil {
+		return x.PushToken
+	}
+	return ""
+}
+
+type RegisterPushTokenResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RegisterPushTokenResponse) Reset() {
+	*x = RegisterPushTokenResponse{}
+	mi := &file_user_v1_user_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RegisterPushTokenResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RegisterPushTokenResponse) ProtoMessage() {}
+
+func (x *RegisterPushTokenResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_user_v1_user_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RegisterPushTokenResponse.ProtoReflect.Descriptor instead.
+func (*RegisterPushTokenResponse) Descriptor() ([]byte, []int) {
+	return file_user_v1_user_proto_rawDescGZIP(), []int{6}
+}
+
 var File_user_v1_user_proto protoreflect.FileDescriptor
 
 const file_user_v1_user_proto_rawDesc = "" +
@@ -261,18 +363,25 @@ const file_user_v1_user_proto_rawDesc = "" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12\x1d\n" +
 	"\n" +
 	"phone_hash\x18\x02 \x01(\fR\tphoneHash\"\x16\n" +
-	"\x14RegisterUserResponse\"9\n" +
+	"\x14RegisterUserResponse\"^\n" +
 	"\x14MatchContactsRequest\x12!\n" +
-	"\fphone_hashes\x18\x01 \x03(\fR\vphoneHashes\"A\n" +
+	"\fphone_hashes\x18\x01 \x03(\fR\vphoneHashes\x12#\n" +
+	"\rsubscriber_id\x18\x02 \x01(\tR\fsubscriberId\"A\n" +
 	"\x15MatchContactsResponse\x12(\n" +
 	"\amatches\x18\x01 \x03(\v2\x0e.user.v1.MatchR\amatches\"C\n" +
 	"\x05Match\x12\x1d\n" +
 	"\n" +
 	"phone_hash\x18\x01 \x01(\fR\tphoneHash\x12\x1b\n" +
-	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId2\xae\x01\n" +
+	"\tdevice_id\x18\x02 \x01(\tR\bdeviceId\"V\n" +
+	"\x18RegisterPushTokenRequest\x12\x1b\n" +
+	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12\x1d\n" +
+	"\n" +
+	"push_token\x18\x02 \x01(\tR\tpushToken\"\x1b\n" +
+	"\x19RegisterPushTokenResponse2\x8c\x02\n" +
 	"\vUserService\x12M\n" +
 	"\fRegisterUser\x12\x1c.user.v1.RegisterUserRequest\x1a\x1d.user.v1.RegisterUserResponse\"\x00\x12P\n" +
-	"\rMatchContacts\x12\x1d.user.v1.MatchContactsRequest\x1a\x1e.user.v1.MatchContactsResponse\"\x00B?Z=github.com/sukhmai/widget/backend/internal/gen/user/v1;userv1b\x06proto3"
+	"\rMatchContacts\x12\x1d.user.v1.MatchContactsRequest\x1a\x1e.user.v1.MatchContactsResponse\"\x00\x12\\\n" +
+	"\x11RegisterPushToken\x12!.user.v1.RegisterPushTokenRequest\x1a\".user.v1.RegisterPushTokenResponse\"\x00B?Z=github.com/sukhmai/widget/backend/internal/gen/user/v1;userv1b\x06proto3"
 
 var (
 	file_user_v1_user_proto_rawDescOnce sync.Once
@@ -286,22 +395,26 @@ func file_user_v1_user_proto_rawDescGZIP() []byte {
 	return file_user_v1_user_proto_rawDescData
 }
 
-var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_user_v1_user_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_user_v1_user_proto_goTypes = []any{
-	(*RegisterUserRequest)(nil),   // 0: user.v1.RegisterUserRequest
-	(*RegisterUserResponse)(nil),  // 1: user.v1.RegisterUserResponse
-	(*MatchContactsRequest)(nil),  // 2: user.v1.MatchContactsRequest
-	(*MatchContactsResponse)(nil), // 3: user.v1.MatchContactsResponse
-	(*Match)(nil),                 // 4: user.v1.Match
+	(*RegisterUserRequest)(nil),       // 0: user.v1.RegisterUserRequest
+	(*RegisterUserResponse)(nil),      // 1: user.v1.RegisterUserResponse
+	(*MatchContactsRequest)(nil),      // 2: user.v1.MatchContactsRequest
+	(*MatchContactsResponse)(nil),     // 3: user.v1.MatchContactsResponse
+	(*Match)(nil),                     // 4: user.v1.Match
+	(*RegisterPushTokenRequest)(nil),  // 5: user.v1.RegisterPushTokenRequest
+	(*RegisterPushTokenResponse)(nil), // 6: user.v1.RegisterPushTokenResponse
 }
 var file_user_v1_user_proto_depIdxs = []int32{
 	4, // 0: user.v1.MatchContactsResponse.matches:type_name -> user.v1.Match
 	0, // 1: user.v1.UserService.RegisterUser:input_type -> user.v1.RegisterUserRequest
 	2, // 2: user.v1.UserService.MatchContacts:input_type -> user.v1.MatchContactsRequest
-	1, // 3: user.v1.UserService.RegisterUser:output_type -> user.v1.RegisterUserResponse
-	3, // 4: user.v1.UserService.MatchContacts:output_type -> user.v1.MatchContactsResponse
-	3, // [3:5] is the sub-list for method output_type
-	1, // [1:3] is the sub-list for method input_type
+	5, // 3: user.v1.UserService.RegisterPushToken:input_type -> user.v1.RegisterPushTokenRequest
+	1, // 4: user.v1.UserService.RegisterUser:output_type -> user.v1.RegisterUserResponse
+	3, // 5: user.v1.UserService.MatchContacts:output_type -> user.v1.MatchContactsResponse
+	6, // 6: user.v1.UserService.RegisterPushToken:output_type -> user.v1.RegisterPushTokenResponse
+	4, // [4:7] is the sub-list for method output_type
+	1, // [1:4] is the sub-list for method input_type
 	1, // [1:1] is the sub-list for extension type_name
 	1, // [1:1] is the sub-list for extension extendee
 	0, // [0:1] is the sub-list for field type_name
@@ -318,7 +431,7 @@ func file_user_v1_user_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_user_v1_user_proto_rawDesc), len(file_user_v1_user_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

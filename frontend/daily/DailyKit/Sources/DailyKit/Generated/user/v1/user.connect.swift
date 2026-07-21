@@ -22,6 +22,12 @@ public protocol User_V1_UserServiceClientInterface: Sendable {
 
     @available(iOS 13, *)
     func `matchContacts`(request: User_V1_MatchContactsRequest, headers: Connect.Headers) async -> ResponseMessage<User_V1_MatchContactsResponse>
+
+    @discardableResult
+    func `registerPushToken`(request: User_V1_RegisterPushTokenRequest, headers: Connect.Headers, completion: @escaping @Sendable (ResponseMessage<User_V1_RegisterPushTokenResponse>) -> Void) -> Connect.Cancelable
+
+    @available(iOS 13, *)
+    func `registerPushToken`(request: User_V1_RegisterPushTokenRequest, headers: Connect.Headers) async -> ResponseMessage<User_V1_RegisterPushTokenResponse>
 }
 
 /// Concrete implementation of `User_V1_UserServiceClientInterface`.
@@ -52,10 +58,21 @@ public final class User_V1_UserServiceClient: User_V1_UserServiceClientInterface
         return await self.client.unary(path: "/user.v1.UserService/MatchContacts", idempotencyLevel: .unknown, request: request, headers: headers)
     }
 
+    @discardableResult
+    public func `registerPushToken`(request: User_V1_RegisterPushTokenRequest, headers: Connect.Headers = [:], completion: @escaping @Sendable (ResponseMessage<User_V1_RegisterPushTokenResponse>) -> Void) -> Connect.Cancelable {
+        return self.client.unary(path: "/user.v1.UserService/RegisterPushToken", idempotencyLevel: .unknown, request: request, headers: headers, completion: completion)
+    }
+
+    @available(iOS 13, *)
+    public func `registerPushToken`(request: User_V1_RegisterPushTokenRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<User_V1_RegisterPushTokenResponse> {
+        return await self.client.unary(path: "/user.v1.UserService/RegisterPushToken", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
     public enum Metadata {
         public enum Methods {
             public static let registerUser = Connect.MethodSpec(name: "RegisterUser", service: "user.v1.UserService", type: .unary)
             public static let matchContacts = Connect.MethodSpec(name: "MatchContacts", service: "user.v1.UserService", type: .unary)
+            public static let registerPushToken = Connect.MethodSpec(name: "RegisterPushToken", service: "user.v1.UserService", type: .unary)
         }
     }
 }

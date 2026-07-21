@@ -28,6 +28,18 @@ public enum Social {
         return response.error == nil
     }
 
+    /// Register this device's current APNs token with the backend, so a
+    /// friend's post can push a silent "refresh your widget" notification
+    /// instead of relying solely on the widget's own poll interval.
+    @discardableResult
+    public static func registerPushToken(_ token: String) async -> Bool {
+        let response = await DailyAPI.userClient().registerPushToken(request: .with {
+            $0.deviceID = DeviceUser.id
+            $0.pushToken = token
+        })
+        return response.error == nil
+    }
+
     /// A contact as read from the address book: a display name, its numbers, and
     /// an optional thumbnail photo.
     public struct Contact: Sendable {
@@ -64,6 +76,7 @@ public enum Social {
 
         let response = await DailyAPI.userClient().matchContacts(request: .with {
             $0.phoneHashes = Array(infoByHash.keys)
+            $0.subscriberID = DeviceUser.id
         })
         guard let matches = response.message?.matches else { return FriendStore.load() }
 

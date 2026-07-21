@@ -14,6 +14,7 @@ import (
 	"github.com/sukhmai/widget/backend/internal/db"
 	atomv1 "github.com/sukhmai/widget/backend/internal/gen/atom/v1"
 	"github.com/sukhmai/widget/backend/internal/gen/atom/v1/atomv1connect"
+	"github.com/sukhmai/widget/backend/internal/push"
 	"github.com/sukhmai/widget/backend/internal/resource"
 )
 
@@ -73,6 +74,10 @@ func (h *Handler) CreateAtom(ctx context.Context, req *connect.Request[atomv1.Cr
 	if err != nil {
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
+
+	// Non-blocking: notify subscribers so their widgets can refresh right
+	// away. Best-effort — the widget's own poll interval is the fallback.
+	_ = push.Enqueue(ctx, h.rdb, req.Msg.UserId)
 
 	return connect.NewResponse(&atomv1.CreateAtomResponse{
 		Atom: getAtomRowToProto(row),

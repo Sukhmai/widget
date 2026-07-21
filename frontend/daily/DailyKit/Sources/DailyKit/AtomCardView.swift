@@ -135,7 +135,12 @@ struct PosterView: View {
         Color.clear
             .overlay {
                 if let image {
-                    image.resizable().scaledToFill()
+                    // Tinted home screens flatten widget content to a monochrome
+                    // wash by default; the poster art is a photo, not chrome, so
+                    // it should stay full color even in tinted mode.
+                    image.resizable()
+                        .widgetAccentedRenderingMode(.fullColor)
+                        .scaledToFill()
                 } else {
                     Theme.surface
                 }
@@ -153,7 +158,11 @@ struct AvatarBadge: View {
     var body: some View {
         Group {
             if let image {
-                image.resizable().scaledToFill()
+                // Same reasoning as the poster: a contact photo should render
+                // full color rather than get tinted to the home screen's accent.
+                image.resizable()
+                    .widgetAccentedRenderingMode(.fullColor)
+                    .scaledToFill()
             } else {
                 Theme.surface.overlay {
                     Image(systemName: "person.fill")

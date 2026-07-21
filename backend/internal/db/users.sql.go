@@ -11,6 +11,34 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const listSubscriberPushTokens = `-- name: ListSubscriberPushTokens :many
+SELECT u.push_token FROM subscriptions s
+JOIN users u ON u.device_id = s.subscriber_id
+WHERE s.target_id = $1 AND u.push_token IS NOT NULL
+`
+
+// Returns push tokens for every subscriber of target_id that has one
+// registered, so the push worker knows who to notify when target_id posts.
+func (q *Queries) ListSubscriberPushTokens(ctx context.Context, targetID pgtype.UUID) ([]pgtype.Text, error) {
+	rows, err := q.db.Query(ctx, listSubscriberPushTokens, targetID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.Text
+	for rows.Next() {
+		var push_token pgtype.Text
+		if err := rows.Scan(&push_token); err != nil {
+			return nil, err
+		}
+		items = append(items, push_token)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const matchContacts = `-- name: MatchContacts :many
 SELECT device_id, phone_hash FROM users
 WHERE phone_hash = ANY($1::bytea[])
@@ -43,12 +71,46 @@ func (q *Queries) MatchContacts(ctx context.Context, dollar_1 [][]byte) ([]*Matc
 	return items, nil
 }
 
+const setPushToken = `-- name: SetPushToken :exec
+UPDATE users SET push_token = $2, updated_at = NOW() WHERE device_id = $1
+`
+
+type SetPushTokenParams struct {
+	DeviceID  pgtype.UUID
+	PushToken pgtype.Text
+}
+
+// Stores (or clears) a device's APNs token, captured after the app registers
+// for remote notifications.
+func (q *Queries) SetPushToken(ctx context.Context, arg SetPushTokenParams) error {
+	_, err := q.db.Exec(ctx, setPushToken, arg.DeviceID, arg.PushToken)
+	return err
+}
+
+const upsertSubscription = `-- name: UpsertSubscription :exec
+INSERT INTO subscriptions (subscriber_id, target_id)
+VALUES ($1, $2)
+ON CONFLICT (subscriber_id, target_id) DO NOTHING
+`
+
+type UpsertSubscriptionParams struct {
+	SubscriberID pgtype.UUID
+	TargetID     pgtype.UUID
+}
+
+// Records that subscriber_id wants to be notified when target_id posts.
+// Created implicitly whenever MatchContacts resolves a friend.
+func (q *Queries) UpsertSubscription(ctx context.Context, arg UpsertSubscriptionParams) error {
+	_, err := q.db.Exec(ctx, upsertSubscription, arg.SubscriberID, arg.TargetID)
+	return err
+}
+
 const upsertUser = `-- name: UpsertUser :one
 INSERT INTO users (device_id, phone_hash)
 VALUES ($1, $2)
 ON CONFLICT (device_id) DO UPDATE
     SET phone_hash = EXCLUDED.phone_hash, updated_at = NOW()
-RETURNING device_id, phone_hash, updated_at
+RETURNING device_id, phone_hash, push_token, updated_at
 `
 
 type UpsertUserParams struct {
@@ -61,6 +123,11 @@ type UpsertUserParams struct {
 func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (*User, error) {
 	row := q.db.QueryRow(ctx, upsertUser, arg.DeviceID, arg.PhoneHash)
 	var i User
-	err := row.Scan(&i.DeviceID, &i.PhoneHash, &i.UpdatedAt)
+	err := row.Scan(
+		&i.DeviceID,
+		&i.PhoneHash,
+		&i.PushToken,
+		&i.UpdatedAt,
+	)
 	return &i, err
 }

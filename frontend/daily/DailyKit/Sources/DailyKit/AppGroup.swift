@@ -8,7 +8,7 @@ import Foundation
 /// Both targets must declare `com.apple.security.application-groups` containing
 /// `AppGroup.identifier` in their entitlements, or `defaults` falls back to nil.
 public enum AppGroup {
-    public static let identifier = "group.skapur.daily"
+    public static let identifier = "group.skapur.sharedaily"
 
     /// Shared defaults, or `.standard` if the App Group isn't configured yet
     /// (keeps previews/tests from crashing; real cross-process sharing needs it).

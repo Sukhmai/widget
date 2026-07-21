@@ -23,7 +23,7 @@ struct FriendsView: View {
                 TextField("e.g. +1 415 555 1234", text: $ownNumber)
                     .keyboardType(.phonePad)
                     .textContentType(.telephoneNumber)
-                Text("Used once to register you so friends can find you. Only a one-way hash leaves your device.")
+                Text("Used so that your contacts can find you.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

@@ -13,9 +13,12 @@ message RegisterUserRequest {
 
 message RegisterUserResponse {}
 
-// MatchContacts resolves which of the caller's contacts have registered.
+// MatchContacts resolves which of the caller's contacts have registered. Each
+// match also implicitly subscribes the caller to the matched user's atoms, so
+// the caller's widget can be pushed to when that friend posts.
 message MatchContactsRequest {
   repeated bytes phone_hashes = 1; // hashes of the numbers in the contact book
+  string subscriber_id        = 2; // caller's own device UUID; empty skips auto-subscribe
 }
 
 message MatchContactsResponse {
@@ -27,7 +30,19 @@ message Match {
   string device_id  = 2; // the matched user's device UUID
 }
 
+// RegisterPushToken stores this device's APNs token so the backend can push a
+// silent "refresh your widget" notification when a friend it's subscribed to
+// posts. Independent of MatchContacts since the token can be (re-)issued by
+// the OS at any time.
+message RegisterPushTokenRequest {
+  string device_id  = 1; // device UUID (IDFV); required
+  string push_token = 2; // hex-encoded APNs device token; required
+}
+
+message RegisterPushTokenResponse {}
+
 service UserService {
-  rpc RegisterUser(RegisterUserRequest)   returns (RegisterUserResponse)  {}
-  rpc MatchContacts(MatchContactsRequest) returns (MatchContactsResponse) {}
+  rpc RegisterUser(RegisterUserRequest)           returns (RegisterUserResponse)           {}
+  rpc MatchContacts(MatchContactsRequest)         returns (MatchContactsResponse)          {}
+  rpc RegisterPushToken(RegisterPushTokenRequest) returns (RegisterPushTokenResponse)       {}
 }

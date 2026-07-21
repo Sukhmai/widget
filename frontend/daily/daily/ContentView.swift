@@ -30,18 +30,23 @@ struct ContentView: View {
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
                 }
-                Section("Your thoughts") {
-                    TextField("Add your thoughts", text: $text, axis: .vertical)
+                Section("Speak on this") {
+                    TextField("Only if you want", text: $text, axis: .vertical)
                         .lineLimit(3...6)
                 }
                 Section {
-                    Button(action: { Task { await post() } }) {
-                        HStack {
-                            if posting { ProgressView().padding(.trailing, 4) }
-                            Text(posting ? "Posting…" : "Post")
+                    HStack {
+                        Spacer()
+                        Button(action: { Task { await post() } }) {
+                            HStack {
+                                if posting { ProgressView().padding(.trailing, 4) }
+                                Text(posting ? "Posting…" : "Post")
+                            }
                         }
+                        .disabled(!canPost)
+                        Spacer()
                     }
-                    .disabled(!canPost)
+                    .listRowBackground(Color.clear)
                 }
                 if let status {
                     Section { Text(status).font(.footnote).foregroundStyle(.secondary) }

@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: widget
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: widgetdb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # not exposed to host; only reachable by other services on this network
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # not exposed to host
+
+  api:
+    build:
+      context: ./backend
+      target: api
+    container_name: widget-api
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on:
+      - db
+      - redis
+    networks:
+      - default
+      - web
+    # not exposed to host directly; take's Caddy instance proxies to it
+    # over the shared "web" network (see DEPLOY.md)
+
+  worker:
+    build:
+      context: ./backend
+      target: worker
+    restart: unless-stopped
+    env_file: .env.production
+    depends_on:
+      - db
+      - redis
+    volumes:
+      - ${APNS_KEY_HOST_PATH}:/app/apns_key.p8:ro
+
+volumes:
+  postgres_data:
+
+networks:
+  # Shared with the take project's Caddy container so it can reverse-proxy
+  # to widget-api without either project exposing ports on the host.
+  web:
+    external: true

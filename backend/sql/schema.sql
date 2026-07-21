@@ -38,5 +38,20 @@ CREATE INDEX ON atoms (user_id, created_at DESC, id DESC);
 CREATE TABLE users (
     device_id   UUID          PRIMARY KEY,       -- client-supplied IDFV; no default
     phone_hash  BYTEA         UNIQUE,            -- HMAC-SHA256(E.164 number); nullable
+    push_token  TEXT,                            -- APNs device token (hex); nullable until registered
     updated_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
+
+-- DROP TABLE IF EXISTS subscriptions;
+
+-- A subscription records that subscriber_id wants to be notified when
+-- target_id posts. Created implicitly by MatchContacts (auto-subscribe on
+-- contact match) -- there is no explicit follow/unfollow UI.
+CREATE TABLE subscriptions (
+    subscriber_id UUID        NOT NULL REFERENCES users(device_id) ON DELETE CASCADE,
+    target_id     UUID        NOT NULL REFERENCES users(device_id) ON DELETE CASCADE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (subscriber_id, target_id)
+);
+
+CREATE INDEX ON subscriptions (target_id);

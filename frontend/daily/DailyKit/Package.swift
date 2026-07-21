@@ -1,10 +1,10 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 6.2
 import PackageDescription
 
 let package = Package(
     name: "DailyKit",
     platforms: [
-        .iOS(.v17),
+        .iOS(.v26),
     ],
     products: [
         .library(name: "DailyKit", targets: ["DailyKit"]),
@@ -23,6 +23,9 @@ let package = Package(
             ],
             resources: [
                 .process("Media.xcassets"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v5),
             ]
         ),
     ]

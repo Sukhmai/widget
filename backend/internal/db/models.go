@@ -26,8 +26,15 @@ type Resource struct {
 	CreatedAt pgtype.Timestamptz
 }
 
+type Subscription struct {
+	SubscriberID pgtype.UUID
+	TargetID     pgtype.UUID
+	CreatedAt    pgtype.Timestamptz
+}
+
 type User struct {
 	DeviceID  pgtype.UUID
 	PhoneHash []byte
+	PushToken pgtype.Text
 	UpdatedAt pgtype.Timestamptz
 }

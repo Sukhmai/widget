@@ -39,12 +39,16 @@ const (
 	// UserServiceMatchContactsProcedure is the fully-qualified name of the UserService's MatchContacts
 	// RPC.
 	UserServiceMatchContactsProcedure = "/user.v1.UserService/MatchContacts"
+	// UserServiceRegisterPushTokenProcedure is the fully-qualified name of the UserService's
+	// RegisterPushToken RPC.
+	UserServiceRegisterPushTokenProcedure = "/user.v1.UserService/RegisterPushToken"
 )
 
 // UserServiceClient is a client for the user.v1.UserService service.
 type UserServiceClient interface {
 	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
 	MatchContacts(context.Context, *connect.Request[v1.MatchContactsRequest]) (*connect.Response[v1.MatchContactsResponse], error)
+	RegisterPushToken(context.Context, *connect.Request[v1.RegisterPushTokenRequest]) (*connect.Response[v1.RegisterPushTokenResponse], error)
 }
 
 // NewUserServiceClient constructs a client for the user.v1.UserService service. By default, it uses
@@ -70,13 +74,20 @@ func NewUserServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(userServiceMethods.ByName("MatchContacts")),
 			connect.WithClientOptions(opts...),
 		),
+		registerPushToken: connect.NewClient[v1.RegisterPushTokenRequest, v1.RegisterPushTokenResponse](
+			httpClient,
+			baseURL+UserServiceRegisterPushTokenProcedure,
+			connect.WithSchema(userServiceMethods.ByName("RegisterPushToken")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // userServiceClient implements UserServiceClient.
 type userServiceClient struct {
-	registerUser  *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
-	matchContacts *connect.Client[v1.MatchContactsRequest, v1.MatchContactsResponse]
+	registerUser      *connect.Client[v1.RegisterUserRequest, v1.RegisterUserResponse]
+	matchContacts     *connect.Client[v1.MatchContactsRequest, v1.MatchContactsResponse]
+	registerPushToken *connect.Client[v1.RegisterPushTokenRequest, v1.RegisterPushTokenResponse]
 }
 
 // RegisterUser calls user.v1.UserService.RegisterUser.
@@ -89,10 +100,16 @@ func (c *userServiceClient) MatchContacts(ctx context.Context, req *connect.Requ
 	return c.matchContacts.CallUnary(ctx, req)
 }
 
+// RegisterPushToken calls user.v1.UserService.RegisterPushToken.
+func (c *userServiceClient) RegisterPushToken(ctx context.Context, req *connect.Request[v1.RegisterPushTokenRequest]) (*connect.Response[v1.RegisterPushTokenResponse], error) {
+	return c.registerPushToken.CallUnary(ctx, req)
+}
+
 // UserServiceHandler is an implementation of the user.v1.UserService service.
 type UserServiceHandler interface {
 	RegisterUser(context.Context, *connect.Request[v1.RegisterUserRequest]) (*connect.Response[v1.RegisterUserResponse], error)
 	MatchContacts(context.Context, *connect.Request[v1.MatchContactsRequest]) (*connect.Response[v1.MatchContactsResponse], error)
+	RegisterPushToken(context.Context, *connect.Request[v1.RegisterPushTokenRequest]) (*connect.Response[v1.RegisterPushTokenResponse], error)
 }
 
 // NewUserServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -114,12 +131,20 @@ func NewUserServiceHandler(svc UserServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(userServiceMethods.ByName("MatchContacts")),
 		connect.WithHandlerOptions(opts...),
 	)
+	userServiceRegisterPushTokenHandler := connect.NewUnaryHandler(
+		UserServiceRegisterPushTokenProcedure,
+		svc.RegisterPushToken,
+		connect.WithSchema(userServiceMethods.ByName("RegisterPushToken")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/user.v1.UserService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case UserServiceRegisterUserProcedure:
 			userServiceRegisterUserHandler.ServeHTTP(w, r)
 		case UserServiceMatchContactsProcedure:
 			userServiceMatchContactsHandler.ServeHTTP(w, r)
+		case UserServiceRegisterPushTokenProcedure:
+			userServiceRegisterPushTokenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -135,4 +160,8 @@ func (UnimplementedUserServiceHandler) RegisterUser(context.Context, *connect.Re
 
 func (UnimplementedUserServiceHandler) MatchContacts(context.Context, *connect.Request[v1.MatchContactsRequest]) (*connect.Response[v1.MatchContactsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("user.v1.UserService.MatchContacts is not implemented"))
+}
+
+func (UnimplementedUserServiceHandler) RegisterPushToken(context.Context, *connect.Request[v1.RegisterPushTokenRequest]) (*connect.Response[v1.RegisterPushTokenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("user.v1.UserService.RegisterPushToken is not implemented"))
 }
