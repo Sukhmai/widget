@@ -12,7 +12,9 @@ import (
 	"github.com/sukhmai/widget/backend/internal/atom"
 	"github.com/sukhmai/widget/backend/internal/db"
 	"github.com/sukhmai/widget/backend/internal/gen/atom/v1/atomv1connect"
+	"github.com/sukhmai/widget/backend/internal/gen/user/v1/userv1connect"
 	"github.com/sukhmai/widget/backend/internal/postgres"
+	"github.com/sukhmai/widget/backend/internal/user"
 )
 
 func main() {
@@ -52,6 +54,10 @@ func main() {
 	// Mount the AtomService connect handler at its RPC path prefix.
 	atomPath, atomHandler := atomv1connect.NewAtomServiceHandler(atom.New(queries, rdb))
 	r.Mount(atomPath, atomHandler)
+
+	// Mount the UserService connect handler (registration + contact matching).
+	userPath, userHandler := userv1connect.NewUserServiceHandler(user.New(queries))
+	r.Mount(userPath, userHandler)
 
 	log.Fatal(http.ListenAndServe(":8080", r))
 }

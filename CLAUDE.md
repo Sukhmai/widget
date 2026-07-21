@@ -1,0 +1,1 @@
+We're building a project where people can share url with their friends, and those urls are rendered into rich previews inside of widgets. 

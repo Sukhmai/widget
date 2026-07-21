@@ -25,3 +25,9 @@ type Resource struct {
 	FetchedAt pgtype.Timestamptz
 	CreatedAt pgtype.Timestamptz
 }
+
+type User struct {
+	DeviceID  pgtype.UUID
+	PhoneHash []byte
+	UpdatedAt pgtype.Timestamptz
+}

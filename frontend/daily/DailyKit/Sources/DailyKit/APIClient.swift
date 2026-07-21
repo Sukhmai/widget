@@ -30,4 +30,8 @@ public enum DailyAPI {
     public static func atomClient() -> Atom_V1_AtomServiceClient {
         Atom_V1_AtomServiceClient(client: protocolClient())
     }
+
+    public static func userClient() -> User_V1_UserServiceClient {
+        User_V1_UserServiceClient(client: protocolClient())
+    }
 }

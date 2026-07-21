@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package user.v1;
+
+option go_package = "github.com/sukhmai/widget/backend/internal/gen/user/v1;userv1";
+
+// RegisterUser maps this device's write identity (device_id, the same UUID used
+// as atoms.user_id) to a discovery key derived from the user's own phone number.
+message RegisterUserRequest {
+  string device_id  = 1; // device UUID (IDFV); required
+  bytes  phone_hash = 2; // HMAC-SHA256 of the user's E.164 number; required
+}
+
+message RegisterUserResponse {}
+
+// MatchContacts resolves which of the caller's contacts have registered.
+message MatchContactsRequest {
+  repeated bytes phone_hashes = 1; // hashes of the numbers in the contact book
+}
+
+message MatchContactsResponse {
+  repeated Match matches = 1; // one entry per hash that exists; others omitted
+}
+
+message Match {
+  bytes  phone_hash = 1; // echoes an input hash, so the client can re-join names
+  string device_id  = 2; // the matched user's device UUID
+}
+
+service UserService {
+  rpc RegisterUser(RegisterUserRequest)   returns (RegisterUserResponse)  {}
+  rpc MatchContacts(MatchContactsRequest) returns (MatchContactsResponse) {}
+}

@@ -48,6 +48,13 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Daily")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink { FriendsView() } label: {
+                        Image(systemName: "person.2")
+                    }
+                }
+            }
         }
         // A widget tap always launches this app and delivers its `widgetURL` here
         // — iOS never opens Safari itself. Bounce web links back out to the browser
@@ -56,6 +63,11 @@ struct ContentView: View {
             if incoming.scheme == "http" || incoming.scheme == "https" {
                 openURL(incoming)
             }
+        }
+        // Re-register this device's discovery key on launch (no-op until the user
+        // has entered their own number in FriendsView).
+        .task {
+            if Social.isRegistered { await Social.register() }
         }
     }
 

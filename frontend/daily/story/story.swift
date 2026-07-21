@@ -9,36 +9,38 @@ import WidgetKit
 import SwiftUI
 import DailyKit
 
-struct Provider: TimelineProvider {
+struct Provider: AppIntentTimelineProvider {
     func placeholder(in context: Context) -> StoryEntry {
-        StoryEntry(date: Date(), model: .placeholder, posterData: nil)
+        StoryEntry(date: Date(), model: .placeholder, posterData: nil, avatarData: nil)
     }
 
-    func getSnapshot(in context: Context, completion: @escaping (StoryEntry) -> ()) {
-        Task {
-            completion(await fetchEntry())
+    func snapshot(for configuration: SelectFriendIntent, in context: Context) async -> StoryEntry {
+        await fetchEntry(for: configuration)
+    }
+
+    func timeline(for configuration: SelectFriendIntent, in context: Context) async -> Timeline<StoryEntry> {
+        let entry = await fetchEntry(for: configuration)
+        // Refresh roughly every 15 minutes to pick up a newly posted atom, a
+        // resource the worker has since fetched, or (in Random mode) a new friend.
+        let next = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
+        return Timeline(entries: [entry], policy: .after(next))
+    }
+
+    /// Resolve which friend's atom to show, then fetch it and its poster.
+    /// A pinned friend uses their device_id; Random (or an unset/removed
+    /// selection) picks a matched friend at random each refresh.
+    private func fetchEntry(for configuration: SelectFriendIntent) async -> StoryEntry {
+        guard let friend = resolveFriend(configuration) else {
+            return StoryEntry(date: Date(), model: nil, posterData: nil, avatarData: nil)
         }
-    }
 
-    func getTimeline(in context: Context, completion: @escaping (Timeline<StoryEntry>) -> ()) {
-        Task {
-            let entry = await fetchEntry()
-            // Refresh roughly every 15 minutes to pick up a newly posted atom or a
-            // resource that has since been fetched by the worker.
-            let next = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
-            completion(Timeline(entries: [entry], policy: .after(next)))
-        }
-    }
-
-    /// Pull the latest atom for this device and fetch its poster (if any).
-    private func fetchEntry() async -> StoryEntry {
         let client = DailyAPI.atomClient()
         let response = await client.getLatestAtomFromUser(
-            request: .with { $0.userID = DeviceUser.id }
+            request: .with { $0.userID = friend.deviceID }
         )
 
         guard let atom = response.message?.atom, response.message?.hasAtom == true else {
-            return StoryEntry(date: Date(), model: nil, posterData: nil)
+            return StoryEntry(date: Date(), model: nil, posterData: nil, avatarData: friend.avatar)
         }
 
         let model = AtomCardModel(from: atom)
@@ -46,7 +48,17 @@ struct Provider: TimelineProvider {
         if let url = model.coverURL {
             posterData = try? await URLSession.shared.data(from: url).0
         }
-        return StoryEntry(date: Date(), model: model, posterData: posterData)
+        return StoryEntry(date: Date(), model: model, posterData: posterData, avatarData: friend.avatar)
+    }
+
+    private func resolveFriend(_ configuration: SelectFriendIntent) -> Friend? {
+        let selected = configuration.friend
+        if let selected, selected.id != FriendSelection.randomID {
+            // Pinned friend — honor it only if still in the matched list.
+            return FriendStore.friend(withID: selected.id)
+        }
+        // Random / unset: pick from the matched friends.
+        return FriendStore.load().randomElement()
     }
 }
 
@@ -54,6 +66,7 @@ struct StoryEntry: TimelineEntry {
     let date: Date
     let model: AtomCardModel?
     let posterData: Data?
+    let avatarData: Data?
 }
 
 struct storyEntryView: View {
@@ -61,15 +74,18 @@ struct storyEntryView: View {
 
     var body: some View {
         if let model = entry.model {
-            AtomCardView(model: model, posterImage: posterImage)
+            AtomCardView(model: model, posterImage: posterImage, avatarImage: avatarImage)
         } else {
             emptyState
         }
     }
 
-    private var posterImage: Image? {
+    private var posterImage: Image? { image(from: entry.posterData) }
+    private var avatarImage: Image? { image(from: entry.avatarData) }
+
+    private func image(from data: Data?) -> Image? {
         #if canImport(UIKit)
-        if let data = entry.posterData, let ui = UIImage(data: data) {
+        if let data, let ui = UIImage(data: data) {
             return Image(uiImage: ui)
         }
         #endif
@@ -88,12 +104,12 @@ struct story: Widget {
     let kind: String = "story"
 
     var body: some WidgetConfiguration {
-        StaticConfiguration(kind: kind, provider: Provider()) { entry in
+        AppIntentConfiguration(kind: kind, intent: SelectFriendIntent.self, provider: Provider()) { entry in
             storyEntryView(entry: entry)
                 .containerBackground(Theme.card, for: .widget)
         }
         .configurationDisplayName("Daily")
-        .description("Your friend's latest atom.")
+        .description("A friend's latest atom. Long-press to pick a friend or rotate at random.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }
@@ -102,17 +118,17 @@ struct story: Widget {
 #Preview(as: .systemSmall) {
     story()
 } timeline: {
-    StoryEntry(date: .now, model: .placeholder, posterData: nil)
+    StoryEntry(date: .now, model: .placeholder, posterData: nil, avatarData: nil)
 }
 
 #Preview(as: .systemMedium) {
     story()
 } timeline: {
-    StoryEntry(date: .now, model: .placeholder, posterData: nil)
+    StoryEntry(date: .now, model: .placeholder, posterData: nil, avatarData: nil)
 }
 
 #Preview(as: .systemLarge) {
     story()
 } timeline: {
-    StoryEntry(date: .now, model: .placeholder, posterData: nil)
+    StoryEntry(date: .now, model: .placeholder, posterData: nil, avatarData: nil)
 }
