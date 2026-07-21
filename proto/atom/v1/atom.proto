@@ -1,0 +1,109 @@
+syntax = "proto3";
+
+package atom.v1;
+
+import "resource/v1/resource.proto";
+
+option go_package = "github.com/sukhmai/widget/backend/internal/gen/atom/v1;atomv1";
+
+// Resource is embedded in an Atom response so the frontend never needs a
+// separate call to fetch display metadata.
+message Resource {
+  string id     = 1;
+  string url    = 2;
+  string source = 3;
+  bool   fetched = 5;
+  // metadata is populated once the worker has fetched it (fetched = true).
+  // The active oneof case is determined by source.
+  oneof metadata {
+    resource.v1.MusicTrackMetadata   spotify_track      = 4;
+    resource.v1.MovieMetadata        movie              = 6;
+    resource.v1.BookMetadata         book               = 7;
+    resource.v1.TweetMetadata        tweet              = 8;
+    resource.v1.WikipediaMetadata    wikipedia          = 9;
+    resource.v1.SteamGameMetadata    steam_game         = 10;
+    resource.v1.SubstackPostMetadata substack_post      = 11;
+    resource.v1.GenericMetadata      generic            = 12;
+    resource.v1.YouTubeVideoMetadata youtube_video      = 13;
+    resource.v1.MovieMetadata        imdb_movie         = 15;
+    resource.v1.TikTokVideoMetadata  tiktok_video       = 17;
+    resource.v1.AnimeMetadata        mal_anime          = 18;
+    resource.v1.AnimeMetadata        anilist_anime      = 19;
+    resource.v1.BlueskyPostMetadata  bluesky_post       = 20;
+    resource.v1.InstagramPostMetadata instagram_post    = 21;
+    resource.v1.RedditPostMetadata   reddit_post        = 16;
+  }
+}
+
+message Atom {
+  string   id         = 1;
+  string   user_id    = 2; // device UUID of the author (no auth/profiles yet)
+  string   text       = 3; // optional
+  Resource resource   = 4; // set when atom was created with a URL
+  string   created_at = 5;
+  string   edited_at  = 6; // empty if never edited
+}
+
+message CreateAtomRequest {
+  string user_id      = 1; // device UUID of the author; required
+  string text         = 2; // optional alongside resource_url
+  string resource_url = 3; // optional alongside text
+}
+
+message CreateAtomResponse {
+  Atom atom = 1;
+}
+
+message GetAtomRequest {
+  string atom_id = 1;
+}
+
+message GetAtomResponse {
+  Atom atom = 1;
+}
+
+message GetLatestAtomFromUserRequest {
+  string user_id = 1; // device UUID whose latest atom to fetch; required
+}
+
+message GetLatestAtomFromUserResponse {
+  Atom atom = 1; // unset when the user has no atoms yet
+}
+
+message ListAtomsByUserRequest {
+  string user_id     = 1; // device UUID whose atoms to list; required
+  // Cursor fields from the last atom in the previous page.
+  // Omit on the first request.
+  string cursor_time = 2; // RFC3339 timestamp
+  string cursor_id   = 3; // atom UUID
+  int32  page_size   = 4; // defaults to 20 if 0
+}
+
+message ListAtomsByUserResponse {
+  repeated Atom atoms         = 1;
+  bool          has_next_page = 2;
+}
+
+message UpdateAtomRequest {
+  string atom_id = 1;
+  string text    = 2;
+}
+
+message UpdateAtomResponse {
+  Atom atom = 1;
+}
+
+message DeleteAtomRequest {
+  string atom_id = 1;
+}
+
+message DeleteAtomResponse {}
+
+service AtomService {
+  rpc CreateAtom(CreateAtomRequest)                       returns (CreateAtomResponse)            {}
+  rpc GetAtom(GetAtomRequest)                             returns (GetAtomResponse)               {}
+  rpc GetLatestAtomFromUser(GetLatestAtomFromUserRequest) returns (GetLatestAtomFromUserResponse) {}
+  rpc ListAtomsByUser(ListAtomsByUserRequest)             returns (ListAtomsByUserResponse)       {}
+  rpc UpdateAtom(UpdateAtomRequest)             returns (UpdateAtomResponse)      {}
+  rpc DeleteAtom(DeleteAtomRequest)             returns (DeleteAtomResponse)      {}
+}

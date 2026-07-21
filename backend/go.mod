@@ -3,6 +3,7 @@ module github.com/sukhmai/widget/backend
 go 1.26.3
 
 require (
+	connectrpc.com/connect v1.20.0
 	github.com/go-chi/chi/v5 v5.3.1
 	github.com/go-shiori/go-readability v0.0.0-20251205110129-5db1dc9836f0
 	github.com/golang-jwt/jwt/v5 v5.3.1

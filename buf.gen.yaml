@@ -1,5 +1,6 @@
 version: v2
 plugins:
+  # ── Go (backend) ──
   - remote: buf.build/protocolbuffers/go
     out: backend/internal/gen
     opt:
@@ -8,3 +9,18 @@ plugins:
     out: backend/internal/gen
     opt:
       - paths=source_relative
+
+  # ── Swift (daily app + story widget) ──
+  # connect-swift emits the service clients (*.connect.swift); apple/swift emits
+  # the message models (*.pb.swift). Both land in the shared Generated dir that
+  # the Xcode targets include.
+  - remote: buf.build/connectrpc/swift
+    out: frontend/daily/DailyKit/Sources/DailyKit/Generated
+    opt:
+      - GenerateAsyncMethods=true
+      - GenerateCallbackMethods=true
+      - Visibility=Public
+  - remote: buf.build/apple/swift
+    out: frontend/daily/DailyKit/Sources/DailyKit/Generated
+    opt:
+      - Visibility=Public

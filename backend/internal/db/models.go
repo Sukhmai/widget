@@ -8,6 +8,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Atom struct {
+	ID         pgtype.UUID
+	UserID     pgtype.UUID
+	Text       pgtype.Text
+	ResourceID pgtype.UUID
+	CreatedAt  pgtype.Timestamptz
+	EditedAt   pgtype.Timestamptz
+}
+
 type Resource struct {
 	ID        pgtype.UUID
 	Url       string
