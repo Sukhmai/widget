@@ -52,9 +52,45 @@ projects, and add widget's site block to `take`'s Caddyfile.
 ```bash
 # On the droplet
 apt-get update && apt-get install -y docker.io docker-compose-plugin git   # if not already installed
-git clone <your-widget-repo-url> /opt/widget
 docker network create web
 ```
+
+#### Deploy key for the widget repo
+
+This repo is private, so the droplet needs its own read-only deploy key —
+don't reuse `take`'s key, since a leak of one would then expose both repos.
+
+```bash
+# On the droplet
+ssh-keygen -t ed25519 -C "widget-deploy@droplet" -f ~/.ssh/widget_deploy -N ""
+cat ~/.ssh/widget_deploy.pub
+```
+
+On GitHub: repo → **Settings** → **Deploy keys** → **Add deploy key** → paste
+the public key. Leave **Allow write access** unchecked — the droplet only
+ever pulls.
+
+Since the droplet already has `take`'s deploy key at the default
+`~/.ssh/id_ed25519` (or similar), add a host alias so git picks the right
+key per repo — append to `~/.ssh/config`:
+
+```
+Host github.com-widget
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/widget_deploy
+    IdentitiesOnly yes
+```
+
+Then clone using that alias (note `github.com-widget`, not `github.com`):
+
+```bash
+git clone git@github.com-widget:<your-github-username>/widget.git /opt/widget
+```
+
+Because the remote URL itself encodes the alias, subsequent `git pull` in
+`/opt/widget` will keep using this key automatically — no extra config
+needed per pull.
 
 Attach `take`'s Caddy container to the shared network — edit
 `/opt/take/docker-compose.production.yml` and add the `web` network to the

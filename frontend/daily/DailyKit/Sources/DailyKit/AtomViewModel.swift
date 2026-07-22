@@ -137,8 +137,27 @@ public extension AtomCardModel {
             self.init(source: .other, sublayout: .media, coverURL: url(s.coverURL),
                       title: s.title, subtitle: s.authorName, bodyText: "", userText: userText)
         case .generic(let g):
-            self.init(source: .other, sublayout: .media, coverURL: url(g.imageURL),
-                      title: g.title, subtitle: g.description_p, bodyText: "", userText: userText)
+            // generic is the only source whose sublayout is data-driven: an
+            // article renders like wikipedia/tweet (text sublayout, body copy),
+            // anything else renders like a media card (poster + title/site).
+            // Mirrors take's resolveAtomView (frontend/src/lib/resources/atom.ts).
+            if g.isArticle {
+                self.init(source: .other, sublayout: .text,
+                          coverURL: url(g.imageURL),
+                          title: g.title.isEmpty ? g.siteName : g.title,
+                          subtitle: g.author.isEmpty ? g.siteName : g.author,
+                          bodyText: g.bodyText.isEmpty ? g.description_p : g.bodyText,
+                          userText: userText)
+            } else {
+                // Favicon falls back as a media thumbnail — a blown-up favicon
+                // only looks bad full-width for the article hero, which this
+                // branch never renders.
+                let coverURLString = g.imageURL.isEmpty ? g.faviconURL : g.imageURL
+                self.init(source: .other, sublayout: .media,
+                          coverURL: url(coverURLString),
+                          title: g.title.isEmpty ? g.siteName : g.title,
+                          subtitle: g.siteName, bodyText: "", userText: userText)
+            }
         case .redditPost(let r):
             self.init(source: .other, sublayout: .text, coverURL: nil,
                       title: r.title, subtitle: joined("u/\(r.author)", "r/\(r.subreddit)"),

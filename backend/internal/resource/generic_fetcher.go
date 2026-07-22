@@ -65,7 +65,15 @@ func (f *GenericFetcher) Fetch(ctx context.Context, resourceURL string) (json.Ra
 		siteName = prettyHostName(base.Hostname())
 	}
 
+	// og:type == "article" is the strongest signal, but plenty of real articles
+	// (e.g. company blogs) declare og:type "website" or omit it entirely.
+	// readability.Check inspects the DOM itself — enough <p> text under a
+	// plausible content node — so it catches those without false-positiving on
+	// non-article pages (homepages, product pages, etc).
 	isArticle := strings.EqualFold(meta["og:type"], "article")
+	if !isArticle && len(body) > 0 {
+		isArticle = readability.Check(bytes.NewReader(body))
+	}
 	author := firstNonEmpty(meta["article:author"], meta["author"])
 
 	var bodyText string
@@ -108,7 +116,13 @@ func (f *GenericFetcher) fetchHTML(ctx context.Context, rawURL string) (body []b
 		return nil, finalURL
 	}
 	req.Header.Set("User-Agent", browserUA)
-	req.Header.Set("Accept", "text/html,application/xhtml+xml")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.9")
+	req.Header.Set("Sec-Fetch-Dest", "document")
+	req.Header.Set("Sec-Fetch-Mode", "navigate")
+	req.Header.Set("Sec-Fetch-Site", "none")
+	req.Header.Set("Sec-Fetch-User", "?1")
+	req.Header.Set("Upgrade-Insecure-Requests", "1")
 
 	resp, err := f.httpClient.Do(req)
 	if err != nil {

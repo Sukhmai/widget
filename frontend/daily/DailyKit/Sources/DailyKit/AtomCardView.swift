@@ -2,9 +2,9 @@ import SwiftUI
 import WidgetKit
 
 /// Ports take's `AtomCard.svelte` to the three iOS widget families:
-///   systemSmall  → compact   (full-bleed poster)
+///   systemSmall  → tile      (3:2 image on top, meta + text below — small square)
 ///   systemMedium → landscape (poster left, meta + text right)
-///   systemLarge  → tile      (poster + meta on top, text below)
+///   systemLarge  → tile      (3:2 image on top, meta + text below — large square)
 public struct AtomCardView: View {
     @Environment(\.widgetFamily) private var family
     private let model: AtomCardModel
@@ -24,7 +24,13 @@ public struct AtomCardView: View {
         // of a fixed 120pt, so it fills each family proportionally.
         GeometryReader { proxy in
             content(in: proxy.size)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                // Fixed (not maxWidth/maxHeight: .infinity) so that if the content's
+                // natural height overflows the container — e.g. fixedSize text on the
+                // small widget — the reported frame stays true to the container and
+                // the badge overlay below anchors to the real corner instead of the
+                // overflowed one.
+                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .topLeading)
+                .clipped()
                 // The friend's contact avatar sits in the bottom-right corner of
                 // the whole card, so it shows on every atom — poster or text-only.
                 .overlay(alignment: .bottomTrailing) {
@@ -45,27 +51,9 @@ public struct AtomCardView: View {
     @ViewBuilder
     private func content(in size: CGSize) -> some View {
         switch family {
-        case .systemSmall:  compact
-        case .systemLarge:  tile(in: size)
+        case .systemSmall:  tile(in: size, textLineLimit: 2)
+        case .systemLarge:  tile(in: size, textLineLimit: 4)
         default:            landscape(in: size)
-        }
-    }
-
-    // ── compact (1×1): padded poster, or text-only fallback ──
-    @ViewBuilder
-    private var compact: some View {
-        if model.hasCover {
-            // Inset the poster so the small widget has the same breathing room as
-            // the medium/large families rather than bleeding to the edges.
-            PosterView(image: posterImage)
-                .padding(Theme.space3)
-        } else {
-            VStack(alignment: .leading, spacing: Theme.space2) {
-                MetaView(model: model, showSubtitle: !model.subtitle.isEmpty)
-                bodyOrUserText(lineLimit: 6)
-                Spacer(minLength: 0)
-            }
-            .padding(Theme.space3)
         }
     }
 
@@ -86,10 +74,10 @@ public struct AtomCardView: View {
         .padding(Theme.space3)
     }
 
-    // ── tile (2×2): full-width 3:2 hero image on top, details + text below ──
-    // The image spans the width at a 3:2 ratio (~top two-thirds); the lower third
-    // carries the meta and the user's own text.
-    private func tile(in size: CGSize) -> some View {
+    // ── tile (1×1 small / 2×2 large): full-width 3:2 hero image on top,
+    // details + text below. Shared between both square families so the small
+    // widget mirrors the large widget's layout, just scaled down.
+    private func tile(in size: CGSize, textLineLimit: Int) -> some View {
         let imageHeight = (size.width - Theme.space3 * 2) * (2.0 / 3.0)
         return VStack(alignment: .leading, spacing: Theme.space3) {
             if model.hasCover {
@@ -99,7 +87,7 @@ public struct AtomCardView: View {
             }
             VStack(alignment: .leading, spacing: Theme.space2) {
                 MetaView(model: model, showSubtitle: !model.subtitle.isEmpty)
-                bodyOrUserText(lineLimit: 4)
+                bodyOrUserText(lineLimit: textLineLimit)
             }
             Spacer(minLength: 0)
         }
