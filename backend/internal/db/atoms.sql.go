@@ -47,6 +47,133 @@ func (q *Queries) DeleteAtom(ctx context.Context, id pgtype.UUID) error {
 	return err
 }
 
+const getActiveAtomsFromUser = `-- name: GetActiveAtomsFromUser :many
+SELECT
+  a.id,
+  a.user_id,
+  a.text,
+  a.created_at,
+  a.edited_at,
+  r.id         AS resource_id,
+  r.url        AS resource_url,
+  r.source     AS resource_source,
+  r.metadata   AS resource_metadata,
+  r.fetched_at AS resource_fetched_at
+FROM atoms a
+LEFT JOIN resources r ON r.id = a.resource_id
+WHERE a.user_id = $1
+  AND a.created_at >= NOW() - INTERVAL '24 hours'
+ORDER BY a.created_at DESC, a.id DESC
+`
+
+type GetActiveAtomsFromUserRow struct {
+	ID                pgtype.UUID
+	UserID            pgtype.UUID
+	Text              pgtype.Text
+	CreatedAt         pgtype.Timestamptz
+	EditedAt          pgtype.Timestamptz
+	ResourceID        pgtype.UUID
+	ResourceUrl       pgtype.Text
+	ResourceSource    pgtype.Text
+	ResourceMetadata  []byte
+	ResourceFetchedAt pgtype.Timestamptz
+}
+
+func (q *Queries) GetActiveAtomsFromUser(ctx context.Context, userID pgtype.UUID) ([]*GetActiveAtomsFromUserRow, error) {
+	rows, err := q.db.Query(ctx, getActiveAtomsFromUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetActiveAtomsFromUserRow
+	for rows.Next() {
+		var i GetActiveAtomsFromUserRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Text,
+			&i.CreatedAt,
+			&i.EditedAt,
+			&i.ResourceID,
+			&i.ResourceUrl,
+			&i.ResourceSource,
+			&i.ResourceMetadata,
+			&i.ResourceFetchedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getActiveFeedForSubscriber = `-- name: GetActiveFeedForSubscriber :many
+SELECT
+  a.id,
+  a.user_id,
+  a.text,
+  a.created_at,
+  a.edited_at,
+  r.id         AS resource_id,
+  r.url        AS resource_url,
+  r.source     AS resource_source,
+  r.metadata   AS resource_metadata,
+  r.fetched_at AS resource_fetched_at
+FROM atoms a
+JOIN subscriptions s ON s.target_id = a.user_id
+LEFT JOIN resources r ON r.id = a.resource_id
+WHERE s.subscriber_id = $1
+  AND a.created_at >= NOW() - INTERVAL '24 hours'
+ORDER BY a.created_at DESC, a.id DESC
+`
+
+type GetActiveFeedForSubscriberRow struct {
+	ID                pgtype.UUID
+	UserID            pgtype.UUID
+	Text              pgtype.Text
+	CreatedAt         pgtype.Timestamptz
+	EditedAt          pgtype.Timestamptz
+	ResourceID        pgtype.UUID
+	ResourceUrl       pgtype.Text
+	ResourceSource    pgtype.Text
+	ResourceMetadata  []byte
+	ResourceFetchedAt pgtype.Timestamptz
+}
+
+func (q *Queries) GetActiveFeedForSubscriber(ctx context.Context, subscriberID pgtype.UUID) ([]*GetActiveFeedForSubscriberRow, error) {
+	rows, err := q.db.Query(ctx, getActiveFeedForSubscriber, subscriberID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*GetActiveFeedForSubscriberRow
+	for rows.Next() {
+		var i GetActiveFeedForSubscriberRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Text,
+			&i.CreatedAt,
+			&i.EditedAt,
+			&i.ResourceID,
+			&i.ResourceUrl,
+			&i.ResourceSource,
+			&i.ResourceMetadata,
+			&i.ResourceFetchedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getAtom = `-- name: GetAtom :one
 SELECT
   a.id,

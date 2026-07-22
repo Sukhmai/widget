@@ -122,6 +122,49 @@ func (h *Handler) GetLatestAtomFromUser(ctx context.Context, req *connect.Reques
 	}), nil
 }
 
+// GetActiveAtomsFromUser returns the given user's atoms from the last 24
+// hours, newest first. Backs the widget's per-friend story cycling.
+func (h *Handler) GetActiveAtomsFromUser(ctx context.Context, req *connect.Request[atomv1.GetActiveAtomsFromUserRequest]) (*connect.Response[atomv1.GetActiveAtomsFromUserResponse], error) {
+	userID, err := parseUUID(req.Msg.UserId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid user_id"))
+	}
+
+	rows, err := h.db.GetActiveAtomsFromUser(ctx, userID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	atoms := make([]*atomv1.Atom, len(rows))
+	for i, row := range rows {
+		atoms[i] = activeAtomsFromUserRowToProto(row)
+	}
+
+	return connect.NewResponse(&atomv1.GetActiveAtomsFromUserResponse{Atoms: atoms}), nil
+}
+
+// GetActiveFeedForSubscriber returns atoms from the last 24 hours across all
+// of subscriber_id's subscriptions, merged newest first. Backs the widget's
+// merged "All" story mode.
+func (h *Handler) GetActiveFeedForSubscriber(ctx context.Context, req *connect.Request[atomv1.GetActiveFeedForSubscriberRequest]) (*connect.Response[atomv1.GetActiveFeedForSubscriberResponse], error) {
+	subscriberID, err := parseUUID(req.Msg.SubscriberId)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid subscriber_id"))
+	}
+
+	rows, err := h.db.GetActiveFeedForSubscriber(ctx, subscriberID)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	atoms := make([]*atomv1.Atom, len(rows))
+	for i, row := range rows {
+		atoms[i] = activeFeedForSubscriberRowToProto(row)
+	}
+
+	return connect.NewResponse(&atomv1.GetActiveFeedForSubscriberResponse{Atoms: atoms}), nil
+}
+
 func (h *Handler) ListAtomsByUser(ctx context.Context, req *connect.Request[atomv1.ListAtomsByUserRequest]) (*connect.Response[atomv1.ListAtomsByUserResponse], error) {
 	userID, err := parseUUID(req.Msg.UserId)
 	if err != nil {

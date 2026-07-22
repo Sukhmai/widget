@@ -28,5 +28,9 @@ let package = Package(
                 .swiftLanguageMode(.v5),
             ]
         ),
+        .testTarget(
+            name: "DailyKitTests",
+            dependencies: ["DailyKit"]
+        ),
     ]
 )

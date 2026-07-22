@@ -2,15 +2,15 @@
 //  FriendIntent.swift
 //  story
 //
-//  Widget configuration: pick a specific matched friend, or "Random" to rotate
-//  through them on each refresh. Options come from the App Group friend list the
-//  app populates via contact matching.
+//  Widget configuration: pick a specific matched friend, or "All" for the
+//  merged feed across every matched friend. Options come from the App Group
+//  friend list the app populates via contact matching.
 //
 
 import AppIntents
 import DailyKit
 
-/// Sentinel id for the "Random" option — distinct from any real device UUID.
+/// Sentinel id for the "All" (merged feed) option — distinct from any real device UUID.
 enum FriendSelection {
     static let randomID = "__random__"
 }
@@ -24,7 +24,7 @@ struct FriendEntity: AppEntity {
 
     var displayRepresentation: DisplayRepresentation { DisplayRepresentation(title: "\(name)") }
 
-    static let random = FriendEntity(id: FriendSelection.randomID, name: "🎲 Random")
+    static let random = FriendEntity(id: FriendSelection.randomID, name: "🗞️ All")
 }
 
 struct FriendQuery: EntityQuery {
@@ -37,7 +37,7 @@ struct FriendQuery: EntityQuery {
         }
     }
 
-    /// The picker list: Random first, then each matched friend.
+    /// The picker list: All first, then each matched friend.
     func suggestedEntities() async throws -> [FriendEntity] {
         [.random] + FriendStore.load().map { FriendEntity(id: $0.deviceID, name: $0.name) }
     }
@@ -47,7 +47,7 @@ struct FriendQuery: EntityQuery {
 
 struct SelectFriendIntent: WidgetConfigurationIntent {
     static var title: LocalizedStringResource { "Select Friend" }
-    static var description: IntentDescription { "Choose whose atom to show, or rotate at random." }
+    static var description: IntentDescription { "Choose whose links to show, or see everyone's." }
 
     @Parameter(title: "Friend")
     var friend: FriendEntity?

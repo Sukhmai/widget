@@ -729,6 +729,182 @@ func (x *GetLatestAtomFromUserResponse) GetAtom() *Atom {
 	return nil
 }
 
+type GetActiveAtomsFromUserRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // device UUID whose active (last-24h) atoms to fetch; required
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetActiveAtomsFromUserRequest) Reset() {
+	*x = GetActiveAtomsFromUserRequest{}
+	mi := &file_atom_v1_atom_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetActiveAtomsFromUserRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetActiveAtomsFromUserRequest) ProtoMessage() {}
+
+func (x *GetActiveAtomsFromUserRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_atom_v1_atom_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetActiveAtomsFromUserRequest.ProtoReflect.Descriptor instead.
+func (*GetActiveAtomsFromUserRequest) Descriptor() ([]byte, []int) {
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *GetActiveAtomsFromUserRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type GetActiveAtomsFromUserResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Atoms         []*Atom                `protobuf:"bytes,1,rep,name=atoms,proto3" json:"atoms,omitempty"` // newest-first; empty when none in the last 24h
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetActiveAtomsFromUserResponse) Reset() {
+	*x = GetActiveAtomsFromUserResponse{}
+	mi := &file_atom_v1_atom_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetActiveAtomsFromUserResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetActiveAtomsFromUserResponse) ProtoMessage() {}
+
+func (x *GetActiveAtomsFromUserResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_atom_v1_atom_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetActiveAtomsFromUserResponse.ProtoReflect.Descriptor instead.
+func (*GetActiveAtomsFromUserResponse) Descriptor() ([]byte, []int) {
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetActiveAtomsFromUserResponse) GetAtoms() []*Atom {
+	if x != nil {
+		return x.Atoms
+	}
+	return nil
+}
+
+type GetActiveFeedForSubscriberRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	SubscriberId  string                 `protobuf:"bytes,1,opt,name=subscriber_id,json=subscriberId,proto3" json:"subscriber_id,omitempty"` // caller's device UUID; required
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetActiveFeedForSubscriberRequest) Reset() {
+	*x = GetActiveFeedForSubscriberRequest{}
+	mi := &file_atom_v1_atom_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetActiveFeedForSubscriberRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetActiveFeedForSubscriberRequest) ProtoMessage() {}
+
+func (x *GetActiveFeedForSubscriberRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_atom_v1_atom_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetActiveFeedForSubscriberRequest.ProtoReflect.Descriptor instead.
+func (*GetActiveFeedForSubscriberRequest) Descriptor() ([]byte, []int) {
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *GetActiveFeedForSubscriberRequest) GetSubscriberId() string {
+	if x != nil {
+		return x.SubscriberId
+	}
+	return ""
+}
+
+type GetActiveFeedForSubscriberResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Atoms         []*Atom                `protobuf:"bytes,1,rep,name=atoms,proto3" json:"atoms,omitempty"` // merged across all subscribed targets, newest-first, last 24h
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetActiveFeedForSubscriberResponse) Reset() {
+	*x = GetActiveFeedForSubscriberResponse{}
+	mi := &file_atom_v1_atom_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetActiveFeedForSubscriberResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetActiveFeedForSubscriberResponse) ProtoMessage() {}
+
+func (x *GetActiveFeedForSubscriberResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_atom_v1_atom_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetActiveFeedForSubscriberResponse.ProtoReflect.Descriptor instead.
+func (*GetActiveFeedForSubscriberResponse) Descriptor() ([]byte, []int) {
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *GetActiveFeedForSubscriberResponse) GetAtoms() []*Atom {
+	if x != nil {
+		return x.Atoms
+	}
+	return nil
+}
+
 type ListAtomsByUserRequest struct {
 	state  protoimpl.MessageState `protogen:"open.v1"`
 	UserId string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"` // device UUID whose atoms to list; required
@@ -743,7 +919,7 @@ type ListAtomsByUserRequest struct {
 
 func (x *ListAtomsByUserRequest) Reset() {
 	*x = ListAtomsByUserRequest{}
-	mi := &file_atom_v1_atom_proto_msgTypes[8]
+	mi := &file_atom_v1_atom_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -755,7 +931,7 @@ func (x *ListAtomsByUserRequest) String() string {
 func (*ListAtomsByUserRequest) ProtoMessage() {}
 
 func (x *ListAtomsByUserRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_atom_v1_atom_proto_msgTypes[8]
+	mi := &file_atom_v1_atom_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -768,7 +944,7 @@ func (x *ListAtomsByUserRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAtomsByUserRequest.ProtoReflect.Descriptor instead.
 func (*ListAtomsByUserRequest) Descriptor() ([]byte, []int) {
-	return file_atom_v1_atom_proto_rawDescGZIP(), []int{8}
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ListAtomsByUserRequest) GetUserId() string {
@@ -809,7 +985,7 @@ type ListAtomsByUserResponse struct {
 
 func (x *ListAtomsByUserResponse) Reset() {
 	*x = ListAtomsByUserResponse{}
-	mi := &file_atom_v1_atom_proto_msgTypes[9]
+	mi := &file_atom_v1_atom_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -821,7 +997,7 @@ func (x *ListAtomsByUserResponse) String() string {
 func (*ListAtomsByUserResponse) ProtoMessage() {}
 
 func (x *ListAtomsByUserResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_atom_v1_atom_proto_msgTypes[9]
+	mi := &file_atom_v1_atom_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -834,7 +1010,7 @@ func (x *ListAtomsByUserResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAtomsByUserResponse.ProtoReflect.Descriptor instead.
 func (*ListAtomsByUserResponse) Descriptor() ([]byte, []int) {
-	return file_atom_v1_atom_proto_rawDescGZIP(), []int{9}
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *ListAtomsByUserResponse) GetAtoms() []*Atom {
@@ -861,7 +1037,7 @@ type UpdateAtomRequest struct {
 
 func (x *UpdateAtomRequest) Reset() {
 	*x = UpdateAtomRequest{}
-	mi := &file_atom_v1_atom_proto_msgTypes[10]
+	mi := &file_atom_v1_atom_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -873,7 +1049,7 @@ func (x *UpdateAtomRequest) String() string {
 func (*UpdateAtomRequest) ProtoMessage() {}
 
 func (x *UpdateAtomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_atom_v1_atom_proto_msgTypes[10]
+	mi := &file_atom_v1_atom_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -886,7 +1062,7 @@ func (x *UpdateAtomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAtomRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAtomRequest) Descriptor() ([]byte, []int) {
-	return file_atom_v1_atom_proto_rawDescGZIP(), []int{10}
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *UpdateAtomRequest) GetAtomId() string {
@@ -912,7 +1088,7 @@ type UpdateAtomResponse struct {
 
 func (x *UpdateAtomResponse) Reset() {
 	*x = UpdateAtomResponse{}
-	mi := &file_atom_v1_atom_proto_msgTypes[11]
+	mi := &file_atom_v1_atom_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -924,7 +1100,7 @@ func (x *UpdateAtomResponse) String() string {
 func (*UpdateAtomResponse) ProtoMessage() {}
 
 func (x *UpdateAtomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_atom_v1_atom_proto_msgTypes[11]
+	mi := &file_atom_v1_atom_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -937,7 +1113,7 @@ func (x *UpdateAtomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAtomResponse.ProtoReflect.Descriptor instead.
 func (*UpdateAtomResponse) Descriptor() ([]byte, []int) {
-	return file_atom_v1_atom_proto_rawDescGZIP(), []int{11}
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *UpdateAtomResponse) GetAtom() *Atom {
@@ -956,7 +1132,7 @@ type DeleteAtomRequest struct {
 
 func (x *DeleteAtomRequest) Reset() {
 	*x = DeleteAtomRequest{}
-	mi := &file_atom_v1_atom_proto_msgTypes[12]
+	mi := &file_atom_v1_atom_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -968,7 +1144,7 @@ func (x *DeleteAtomRequest) String() string {
 func (*DeleteAtomRequest) ProtoMessage() {}
 
 func (x *DeleteAtomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_atom_v1_atom_proto_msgTypes[12]
+	mi := &file_atom_v1_atom_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -981,7 +1157,7 @@ func (x *DeleteAtomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAtomRequest.ProtoReflect.Descriptor instead.
 func (*DeleteAtomRequest) Descriptor() ([]byte, []int) {
-	return file_atom_v1_atom_proto_rawDescGZIP(), []int{12}
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *DeleteAtomRequest) GetAtomId() string {
@@ -999,7 +1175,7 @@ type DeleteAtomResponse struct {
 
 func (x *DeleteAtomResponse) Reset() {
 	*x = DeleteAtomResponse{}
-	mi := &file_atom_v1_atom_proto_msgTypes[13]
+	mi := &file_atom_v1_atom_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1011,7 +1187,7 @@ func (x *DeleteAtomResponse) String() string {
 func (*DeleteAtomResponse) ProtoMessage() {}
 
 func (x *DeleteAtomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_atom_v1_atom_proto_msgTypes[13]
+	mi := &file_atom_v1_atom_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1024,7 +1200,7 @@ func (x *DeleteAtomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteAtomResponse.ProtoReflect.Descriptor instead.
 func (*DeleteAtomResponse) Descriptor() ([]byte, []int) {
-	return file_atom_v1_atom_proto_rawDescGZIP(), []int{13}
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{17}
 }
 
 var File_atom_v1_atom_proto protoreflect.FileDescriptor
@@ -1080,7 +1256,15 @@ const file_atom_v1_atom_proto_rawDesc = "" +
 	"\x1cGetLatestAtomFromUserRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"B\n" +
 	"\x1dGetLatestAtomFromUserResponse\x12!\n" +
-	"\x04atom\x18\x01 \x01(\v2\r.atom.v1.AtomR\x04atom\"\x8c\x01\n" +
+	"\x04atom\x18\x01 \x01(\v2\r.atom.v1.AtomR\x04atom\"8\n" +
+	"\x1dGetActiveAtomsFromUserRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"E\n" +
+	"\x1eGetActiveAtomsFromUserResponse\x12#\n" +
+	"\x05atoms\x18\x01 \x03(\v2\r.atom.v1.AtomR\x05atoms\"H\n" +
+	"!GetActiveFeedForSubscriberRequest\x12#\n" +
+	"\rsubscriber_id\x18\x01 \x01(\tR\fsubscriberId\"I\n" +
+	"\"GetActiveFeedForSubscriberResponse\x12#\n" +
+	"\x05atoms\x18\x01 \x03(\v2\r.atom.v1.AtomR\x05atoms\"\x8c\x01\n" +
 	"\x16ListAtomsByUserRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x1f\n" +
 	"\vcursor_time\x18\x02 \x01(\tR\n" +
@@ -1097,12 +1281,14 @@ const file_atom_v1_atom_proto_rawDesc = "" +
 	"\x04atom\x18\x01 \x01(\v2\r.atom.v1.AtomR\x04atom\",\n" +
 	"\x11DeleteAtomRequest\x12\x17\n" +
 	"\aatom_id\x18\x01 \x01(\tR\x06atomId\"\x14\n" +
-	"\x12DeleteAtomResponse2\xea\x03\n" +
+	"\x12DeleteAtomResponse2\xd0\x05\n" +
 	"\vAtomService\x12G\n" +
 	"\n" +
 	"CreateAtom\x12\x1a.atom.v1.CreateAtomRequest\x1a\x1b.atom.v1.CreateAtomResponse\"\x00\x12>\n" +
 	"\aGetAtom\x12\x17.atom.v1.GetAtomRequest\x1a\x18.atom.v1.GetAtomResponse\"\x00\x12h\n" +
-	"\x15GetLatestAtomFromUser\x12%.atom.v1.GetLatestAtomFromUserRequest\x1a&.atom.v1.GetLatestAtomFromUserResponse\"\x00\x12V\n" +
+	"\x15GetLatestAtomFromUser\x12%.atom.v1.GetLatestAtomFromUserRequest\x1a&.atom.v1.GetLatestAtomFromUserResponse\"\x00\x12k\n" +
+	"\x16GetActiveAtomsFromUser\x12&.atom.v1.GetActiveAtomsFromUserRequest\x1a'.atom.v1.GetActiveAtomsFromUserResponse\"\x00\x12w\n" +
+	"\x1aGetActiveFeedForSubscriber\x12*.atom.v1.GetActiveFeedForSubscriberRequest\x1a+.atom.v1.GetActiveFeedForSubscriberResponse\"\x00\x12V\n" +
 	"\x0fListAtomsByUser\x12\x1f.atom.v1.ListAtomsByUserRequest\x1a .atom.v1.ListAtomsByUserResponse\"\x00\x12G\n" +
 	"\n" +
 	"UpdateAtom\x12\x1a.atom.v1.UpdateAtomRequest\x1a\x1b.atom.v1.UpdateAtomResponse\"\x00\x12G\n" +
@@ -1121,77 +1307,87 @@ func file_atom_v1_atom_proto_rawDescGZIP() []byte {
 	return file_atom_v1_atom_proto_rawDescData
 }
 
-var file_atom_v1_atom_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_atom_v1_atom_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_atom_v1_atom_proto_goTypes = []any{
-	(*Resource)(nil),                      // 0: atom.v1.Resource
-	(*Atom)(nil),                          // 1: atom.v1.Atom
-	(*CreateAtomRequest)(nil),             // 2: atom.v1.CreateAtomRequest
-	(*CreateAtomResponse)(nil),            // 3: atom.v1.CreateAtomResponse
-	(*GetAtomRequest)(nil),                // 4: atom.v1.GetAtomRequest
-	(*GetAtomResponse)(nil),               // 5: atom.v1.GetAtomResponse
-	(*GetLatestAtomFromUserRequest)(nil),  // 6: atom.v1.GetLatestAtomFromUserRequest
-	(*GetLatestAtomFromUserResponse)(nil), // 7: atom.v1.GetLatestAtomFromUserResponse
-	(*ListAtomsByUserRequest)(nil),        // 8: atom.v1.ListAtomsByUserRequest
-	(*ListAtomsByUserResponse)(nil),       // 9: atom.v1.ListAtomsByUserResponse
-	(*UpdateAtomRequest)(nil),             // 10: atom.v1.UpdateAtomRequest
-	(*UpdateAtomResponse)(nil),            // 11: atom.v1.UpdateAtomResponse
-	(*DeleteAtomRequest)(nil),             // 12: atom.v1.DeleteAtomRequest
-	(*DeleteAtomResponse)(nil),            // 13: atom.v1.DeleteAtomResponse
-	(*v1.MusicTrackMetadata)(nil),         // 14: resource.v1.MusicTrackMetadata
-	(*v1.MovieMetadata)(nil),              // 15: resource.v1.MovieMetadata
-	(*v1.BookMetadata)(nil),               // 16: resource.v1.BookMetadata
-	(*v1.TweetMetadata)(nil),              // 17: resource.v1.TweetMetadata
-	(*v1.WikipediaMetadata)(nil),          // 18: resource.v1.WikipediaMetadata
-	(*v1.SteamGameMetadata)(nil),          // 19: resource.v1.SteamGameMetadata
-	(*v1.SubstackPostMetadata)(nil),       // 20: resource.v1.SubstackPostMetadata
-	(*v1.GenericMetadata)(nil),            // 21: resource.v1.GenericMetadata
-	(*v1.YouTubeVideoMetadata)(nil),       // 22: resource.v1.YouTubeVideoMetadata
-	(*v1.TikTokVideoMetadata)(nil),        // 23: resource.v1.TikTokVideoMetadata
-	(*v1.AnimeMetadata)(nil),              // 24: resource.v1.AnimeMetadata
-	(*v1.BlueskyPostMetadata)(nil),        // 25: resource.v1.BlueskyPostMetadata
-	(*v1.InstagramPostMetadata)(nil),      // 26: resource.v1.InstagramPostMetadata
-	(*v1.RedditPostMetadata)(nil),         // 27: resource.v1.RedditPostMetadata
+	(*Resource)(nil),                           // 0: atom.v1.Resource
+	(*Atom)(nil),                               // 1: atom.v1.Atom
+	(*CreateAtomRequest)(nil),                  // 2: atom.v1.CreateAtomRequest
+	(*CreateAtomResponse)(nil),                 // 3: atom.v1.CreateAtomResponse
+	(*GetAtomRequest)(nil),                     // 4: atom.v1.GetAtomRequest
+	(*GetAtomResponse)(nil),                    // 5: atom.v1.GetAtomResponse
+	(*GetLatestAtomFromUserRequest)(nil),       // 6: atom.v1.GetLatestAtomFromUserRequest
+	(*GetLatestAtomFromUserResponse)(nil),      // 7: atom.v1.GetLatestAtomFromUserResponse
+	(*GetActiveAtomsFromUserRequest)(nil),      // 8: atom.v1.GetActiveAtomsFromUserRequest
+	(*GetActiveAtomsFromUserResponse)(nil),     // 9: atom.v1.GetActiveAtomsFromUserResponse
+	(*GetActiveFeedForSubscriberRequest)(nil),  // 10: atom.v1.GetActiveFeedForSubscriberRequest
+	(*GetActiveFeedForSubscriberResponse)(nil), // 11: atom.v1.GetActiveFeedForSubscriberResponse
+	(*ListAtomsByUserRequest)(nil),             // 12: atom.v1.ListAtomsByUserRequest
+	(*ListAtomsByUserResponse)(nil),            // 13: atom.v1.ListAtomsByUserResponse
+	(*UpdateAtomRequest)(nil),                  // 14: atom.v1.UpdateAtomRequest
+	(*UpdateAtomResponse)(nil),                 // 15: atom.v1.UpdateAtomResponse
+	(*DeleteAtomRequest)(nil),                  // 16: atom.v1.DeleteAtomRequest
+	(*DeleteAtomResponse)(nil),                 // 17: atom.v1.DeleteAtomResponse
+	(*v1.MusicTrackMetadata)(nil),              // 18: resource.v1.MusicTrackMetadata
+	(*v1.MovieMetadata)(nil),                   // 19: resource.v1.MovieMetadata
+	(*v1.BookMetadata)(nil),                    // 20: resource.v1.BookMetadata
+	(*v1.TweetMetadata)(nil),                   // 21: resource.v1.TweetMetadata
+	(*v1.WikipediaMetadata)(nil),               // 22: resource.v1.WikipediaMetadata
+	(*v1.SteamGameMetadata)(nil),               // 23: resource.v1.SteamGameMetadata
+	(*v1.SubstackPostMetadata)(nil),            // 24: resource.v1.SubstackPostMetadata
+	(*v1.GenericMetadata)(nil),                 // 25: resource.v1.GenericMetadata
+	(*v1.YouTubeVideoMetadata)(nil),            // 26: resource.v1.YouTubeVideoMetadata
+	(*v1.TikTokVideoMetadata)(nil),             // 27: resource.v1.TikTokVideoMetadata
+	(*v1.AnimeMetadata)(nil),                   // 28: resource.v1.AnimeMetadata
+	(*v1.BlueskyPostMetadata)(nil),             // 29: resource.v1.BlueskyPostMetadata
+	(*v1.InstagramPostMetadata)(nil),           // 30: resource.v1.InstagramPostMetadata
+	(*v1.RedditPostMetadata)(nil),              // 31: resource.v1.RedditPostMetadata
 }
 var file_atom_v1_atom_proto_depIdxs = []int32{
-	14, // 0: atom.v1.Resource.spotify_track:type_name -> resource.v1.MusicTrackMetadata
-	15, // 1: atom.v1.Resource.movie:type_name -> resource.v1.MovieMetadata
-	16, // 2: atom.v1.Resource.book:type_name -> resource.v1.BookMetadata
-	17, // 3: atom.v1.Resource.tweet:type_name -> resource.v1.TweetMetadata
-	18, // 4: atom.v1.Resource.wikipedia:type_name -> resource.v1.WikipediaMetadata
-	19, // 5: atom.v1.Resource.steam_game:type_name -> resource.v1.SteamGameMetadata
-	20, // 6: atom.v1.Resource.substack_post:type_name -> resource.v1.SubstackPostMetadata
-	21, // 7: atom.v1.Resource.generic:type_name -> resource.v1.GenericMetadata
-	22, // 8: atom.v1.Resource.youtube_video:type_name -> resource.v1.YouTubeVideoMetadata
-	15, // 9: atom.v1.Resource.imdb_movie:type_name -> resource.v1.MovieMetadata
-	23, // 10: atom.v1.Resource.tiktok_video:type_name -> resource.v1.TikTokVideoMetadata
-	24, // 11: atom.v1.Resource.mal_anime:type_name -> resource.v1.AnimeMetadata
-	24, // 12: atom.v1.Resource.anilist_anime:type_name -> resource.v1.AnimeMetadata
-	25, // 13: atom.v1.Resource.bluesky_post:type_name -> resource.v1.BlueskyPostMetadata
-	26, // 14: atom.v1.Resource.instagram_post:type_name -> resource.v1.InstagramPostMetadata
-	27, // 15: atom.v1.Resource.reddit_post:type_name -> resource.v1.RedditPostMetadata
+	18, // 0: atom.v1.Resource.spotify_track:type_name -> resource.v1.MusicTrackMetadata
+	19, // 1: atom.v1.Resource.movie:type_name -> resource.v1.MovieMetadata
+	20, // 2: atom.v1.Resource.book:type_name -> resource.v1.BookMetadata
+	21, // 3: atom.v1.Resource.tweet:type_name -> resource.v1.TweetMetadata
+	22, // 4: atom.v1.Resource.wikipedia:type_name -> resource.v1.WikipediaMetadata
+	23, // 5: atom.v1.Resource.steam_game:type_name -> resource.v1.SteamGameMetadata
+	24, // 6: atom.v1.Resource.substack_post:type_name -> resource.v1.SubstackPostMetadata
+	25, // 7: atom.v1.Resource.generic:type_name -> resource.v1.GenericMetadata
+	26, // 8: atom.v1.Resource.youtube_video:type_name -> resource.v1.YouTubeVideoMetadata
+	19, // 9: atom.v1.Resource.imdb_movie:type_name -> resource.v1.MovieMetadata
+	27, // 10: atom.v1.Resource.tiktok_video:type_name -> resource.v1.TikTokVideoMetadata
+	28, // 11: atom.v1.Resource.mal_anime:type_name -> resource.v1.AnimeMetadata
+	28, // 12: atom.v1.Resource.anilist_anime:type_name -> resource.v1.AnimeMetadata
+	29, // 13: atom.v1.Resource.bluesky_post:type_name -> resource.v1.BlueskyPostMetadata
+	30, // 14: atom.v1.Resource.instagram_post:type_name -> resource.v1.InstagramPostMetadata
+	31, // 15: atom.v1.Resource.reddit_post:type_name -> resource.v1.RedditPostMetadata
 	0,  // 16: atom.v1.Atom.resource:type_name -> atom.v1.Resource
 	1,  // 17: atom.v1.CreateAtomResponse.atom:type_name -> atom.v1.Atom
 	1,  // 18: atom.v1.GetAtomResponse.atom:type_name -> atom.v1.Atom
 	1,  // 19: atom.v1.GetLatestAtomFromUserResponse.atom:type_name -> atom.v1.Atom
-	1,  // 20: atom.v1.ListAtomsByUserResponse.atoms:type_name -> atom.v1.Atom
-	1,  // 21: atom.v1.UpdateAtomResponse.atom:type_name -> atom.v1.Atom
-	2,  // 22: atom.v1.AtomService.CreateAtom:input_type -> atom.v1.CreateAtomRequest
-	4,  // 23: atom.v1.AtomService.GetAtom:input_type -> atom.v1.GetAtomRequest
-	6,  // 24: atom.v1.AtomService.GetLatestAtomFromUser:input_type -> atom.v1.GetLatestAtomFromUserRequest
-	8,  // 25: atom.v1.AtomService.ListAtomsByUser:input_type -> atom.v1.ListAtomsByUserRequest
-	10, // 26: atom.v1.AtomService.UpdateAtom:input_type -> atom.v1.UpdateAtomRequest
-	12, // 27: atom.v1.AtomService.DeleteAtom:input_type -> atom.v1.DeleteAtomRequest
-	3,  // 28: atom.v1.AtomService.CreateAtom:output_type -> atom.v1.CreateAtomResponse
-	5,  // 29: atom.v1.AtomService.GetAtom:output_type -> atom.v1.GetAtomResponse
-	7,  // 30: atom.v1.AtomService.GetLatestAtomFromUser:output_type -> atom.v1.GetLatestAtomFromUserResponse
-	9,  // 31: atom.v1.AtomService.ListAtomsByUser:output_type -> atom.v1.ListAtomsByUserResponse
-	11, // 32: atom.v1.AtomService.UpdateAtom:output_type -> atom.v1.UpdateAtomResponse
-	13, // 33: atom.v1.AtomService.DeleteAtom:output_type -> atom.v1.DeleteAtomResponse
-	28, // [28:34] is the sub-list for method output_type
-	22, // [22:28] is the sub-list for method input_type
-	22, // [22:22] is the sub-list for extension type_name
-	22, // [22:22] is the sub-list for extension extendee
-	0,  // [0:22] is the sub-list for field type_name
+	1,  // 20: atom.v1.GetActiveAtomsFromUserResponse.atoms:type_name -> atom.v1.Atom
+	1,  // 21: atom.v1.GetActiveFeedForSubscriberResponse.atoms:type_name -> atom.v1.Atom
+	1,  // 22: atom.v1.ListAtomsByUserResponse.atoms:type_name -> atom.v1.Atom
+	1,  // 23: atom.v1.UpdateAtomResponse.atom:type_name -> atom.v1.Atom
+	2,  // 24: atom.v1.AtomService.CreateAtom:input_type -> atom.v1.CreateAtomRequest
+	4,  // 25: atom.v1.AtomService.GetAtom:input_type -> atom.v1.GetAtomRequest
+	6,  // 26: atom.v1.AtomService.GetLatestAtomFromUser:input_type -> atom.v1.GetLatestAtomFromUserRequest
+	8,  // 27: atom.v1.AtomService.GetActiveAtomsFromUser:input_type -> atom.v1.GetActiveAtomsFromUserRequest
+	10, // 28: atom.v1.AtomService.GetActiveFeedForSubscriber:input_type -> atom.v1.GetActiveFeedForSubscriberRequest
+	12, // 29: atom.v1.AtomService.ListAtomsByUser:input_type -> atom.v1.ListAtomsByUserRequest
+	14, // 30: atom.v1.AtomService.UpdateAtom:input_type -> atom.v1.UpdateAtomRequest
+	16, // 31: atom.v1.AtomService.DeleteAtom:input_type -> atom.v1.DeleteAtomRequest
+	3,  // 32: atom.v1.AtomService.CreateAtom:output_type -> atom.v1.CreateAtomResponse
+	5,  // 33: atom.v1.AtomService.GetAtom:output_type -> atom.v1.GetAtomResponse
+	7,  // 34: atom.v1.AtomService.GetLatestAtomFromUser:output_type -> atom.v1.GetLatestAtomFromUserResponse
+	9,  // 35: atom.v1.AtomService.GetActiveAtomsFromUser:output_type -> atom.v1.GetActiveAtomsFromUserResponse
+	11, // 36: atom.v1.AtomService.GetActiveFeedForSubscriber:output_type -> atom.v1.GetActiveFeedForSubscriberResponse
+	13, // 37: atom.v1.AtomService.ListAtomsByUser:output_type -> atom.v1.ListAtomsByUserResponse
+	15, // 38: atom.v1.AtomService.UpdateAtom:output_type -> atom.v1.UpdateAtomResponse
+	17, // 39: atom.v1.AtomService.DeleteAtom:output_type -> atom.v1.DeleteAtomResponse
+	32, // [32:40] is the sub-list for method output_type
+	24, // [24:32] is the sub-list for method input_type
+	24, // [24:24] is the sub-list for extension type_name
+	24, // [24:24] is the sub-list for extension extendee
+	0,  // [0:24] is the sub-list for field type_name
 }
 
 func init() { file_atom_v1_atom_proto_init() }
@@ -1223,7 +1419,7 @@ func file_atom_v1_atom_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_atom_v1_atom_proto_rawDesc), len(file_atom_v1_atom_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

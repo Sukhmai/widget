@@ -51,7 +51,9 @@ public struct AtomCardView: View {
     @ViewBuilder
     private func content(in size: CGSize) -> some View {
         switch family {
-        case .systemSmall:  tile(in: size, textLineLimit: 2)
+        // The small widget has no room to render user/body text legibly, so it
+        // shows just the image + meta.
+        case .systemSmall:  tile(in: size, textLineLimit: nil)
         case .systemLarge:  tile(in: size, textLineLimit: 4)
         default:            landscape(in: size)
         }
@@ -77,7 +79,7 @@ public struct AtomCardView: View {
     // ── tile (1×1 small / 2×2 large): full-width 3:2 hero image on top,
     // details + text below. Shared between both square families so the small
     // widget mirrors the large widget's layout, just scaled down.
-    private func tile(in size: CGSize, textLineLimit: Int) -> some View {
+    private func tile(in size: CGSize, textLineLimit: Int?) -> some View {
         let imageHeight = (size.width - Theme.space3 * 2) * (2.0 / 3.0)
         return VStack(alignment: .leading, spacing: Theme.space3) {
             if model.hasCover {
@@ -87,7 +89,9 @@ public struct AtomCardView: View {
             }
             VStack(alignment: .leading, spacing: Theme.space2) {
                 MetaView(model: model, showSubtitle: !model.subtitle.isEmpty)
-                bodyOrUserText(lineLimit: textLineLimit)
+                if let textLineLimit {
+                    bodyOrUserText(lineLimit: textLineLimit)
+                }
             }
             Spacer(minLength: 0)
         }

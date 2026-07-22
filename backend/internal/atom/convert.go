@@ -171,6 +171,52 @@ func latestAtomRowToProto(row *db.GetLatestAtomFromUserRow) *atomv1.Atom {
 	return a
 }
 
+// activeAtomsFromUserRowToProto converts a GetActiveAtomsFromUserRow into the proto Atom message.
+func activeAtomsFromUserRowToProto(row *db.GetActiveAtomsFromUserRow) *atomv1.Atom {
+	a := &atomv1.Atom{
+		Id:        row.ID.String(),
+		UserId:    row.UserID.String(),
+		Text:      row.Text.String,
+		CreatedAt: row.CreatedAt.Time.UTC().Format(timeFormat),
+	}
+	if row.EditedAt.Valid {
+		a.EditedAt = row.EditedAt.Time.UTC().Format(timeFormat)
+	}
+	if row.ResourceID.Valid {
+		a.Resource = resourceToProto(
+			row.ResourceID.String(),
+			row.ResourceUrl.String,
+			row.ResourceSource.String,
+			row.ResourceFetchedAt.Valid,
+			row.ResourceMetadata,
+		)
+	}
+	return a
+}
+
+// activeFeedForSubscriberRowToProto converts a GetActiveFeedForSubscriberRow into the proto Atom message.
+func activeFeedForSubscriberRowToProto(row *db.GetActiveFeedForSubscriberRow) *atomv1.Atom {
+	a := &atomv1.Atom{
+		Id:        row.ID.String(),
+		UserId:    row.UserID.String(),
+		Text:      row.Text.String,
+		CreatedAt: row.CreatedAt.Time.UTC().Format(timeFormat),
+	}
+	if row.EditedAt.Valid {
+		a.EditedAt = row.EditedAt.Time.UTC().Format(timeFormat)
+	}
+	if row.ResourceID.Valid {
+		a.Resource = resourceToProto(
+			row.ResourceID.String(),
+			row.ResourceUrl.String,
+			row.ResourceSource.String,
+			row.ResourceFetchedAt.Valid,
+			row.ResourceMetadata,
+		)
+	}
+	return a
+}
+
 // listAtomRowToProto converts a ListAtomsByUserRow into the proto Atom message.
 func listAtomRowToProto(row *db.ListAtomsByUserRow) *atomv1.Atom {
 	a := &atomv1.Atom{

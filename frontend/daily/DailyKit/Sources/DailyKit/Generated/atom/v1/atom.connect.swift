@@ -30,6 +30,18 @@ public protocol Atom_V1_AtomServiceClientInterface: Sendable {
     func `getLatestAtomFromUser`(request: Atom_V1_GetLatestAtomFromUserRequest, headers: Connect.Headers) async -> ResponseMessage<Atom_V1_GetLatestAtomFromUserResponse>
 
     @discardableResult
+    func `getActiveAtomsFromUser`(request: Atom_V1_GetActiveAtomsFromUserRequest, headers: Connect.Headers, completion: @escaping @Sendable (ResponseMessage<Atom_V1_GetActiveAtomsFromUserResponse>) -> Void) -> Connect.Cancelable
+
+    @available(iOS 13, *)
+    func `getActiveAtomsFromUser`(request: Atom_V1_GetActiveAtomsFromUserRequest, headers: Connect.Headers) async -> ResponseMessage<Atom_V1_GetActiveAtomsFromUserResponse>
+
+    @discardableResult
+    func `getActiveFeedForSubscriber`(request: Atom_V1_GetActiveFeedForSubscriberRequest, headers: Connect.Headers, completion: @escaping @Sendable (ResponseMessage<Atom_V1_GetActiveFeedForSubscriberResponse>) -> Void) -> Connect.Cancelable
+
+    @available(iOS 13, *)
+    func `getActiveFeedForSubscriber`(request: Atom_V1_GetActiveFeedForSubscriberRequest, headers: Connect.Headers) async -> ResponseMessage<Atom_V1_GetActiveFeedForSubscriberResponse>
+
+    @discardableResult
     func `listAtomsByUser`(request: Atom_V1_ListAtomsByUserRequest, headers: Connect.Headers, completion: @escaping @Sendable (ResponseMessage<Atom_V1_ListAtomsByUserResponse>) -> Void) -> Connect.Cancelable
 
     @available(iOS 13, *)
@@ -87,6 +99,26 @@ public final class Atom_V1_AtomServiceClient: Atom_V1_AtomServiceClientInterface
     }
 
     @discardableResult
+    public func `getActiveAtomsFromUser`(request: Atom_V1_GetActiveAtomsFromUserRequest, headers: Connect.Headers = [:], completion: @escaping @Sendable (ResponseMessage<Atom_V1_GetActiveAtomsFromUserResponse>) -> Void) -> Connect.Cancelable {
+        return self.client.unary(path: "/atom.v1.AtomService/GetActiveAtomsFromUser", idempotencyLevel: .unknown, request: request, headers: headers, completion: completion)
+    }
+
+    @available(iOS 13, *)
+    public func `getActiveAtomsFromUser`(request: Atom_V1_GetActiveAtomsFromUserRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Atom_V1_GetActiveAtomsFromUserResponse> {
+        return await self.client.unary(path: "/atom.v1.AtomService/GetActiveAtomsFromUser", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
+    @discardableResult
+    public func `getActiveFeedForSubscriber`(request: Atom_V1_GetActiveFeedForSubscriberRequest, headers: Connect.Headers = [:], completion: @escaping @Sendable (ResponseMessage<Atom_V1_GetActiveFeedForSubscriberResponse>) -> Void) -> Connect.Cancelable {
+        return self.client.unary(path: "/atom.v1.AtomService/GetActiveFeedForSubscriber", idempotencyLevel: .unknown, request: request, headers: headers, completion: completion)
+    }
+
+    @available(iOS 13, *)
+    public func `getActiveFeedForSubscriber`(request: Atom_V1_GetActiveFeedForSubscriberRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Atom_V1_GetActiveFeedForSubscriberResponse> {
+        return await self.client.unary(path: "/atom.v1.AtomService/GetActiveFeedForSubscriber", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
+    @discardableResult
     public func `listAtomsByUser`(request: Atom_V1_ListAtomsByUserRequest, headers: Connect.Headers = [:], completion: @escaping @Sendable (ResponseMessage<Atom_V1_ListAtomsByUserResponse>) -> Void) -> Connect.Cancelable {
         return self.client.unary(path: "/atom.v1.AtomService/ListAtomsByUser", idempotencyLevel: .unknown, request: request, headers: headers, completion: completion)
     }
@@ -121,6 +153,8 @@ public final class Atom_V1_AtomServiceClient: Atom_V1_AtomServiceClientInterface
             public static let createAtom = Connect.MethodSpec(name: "CreateAtom", service: "atom.v1.AtomService", type: .unary)
             public static let getAtom = Connect.MethodSpec(name: "GetAtom", service: "atom.v1.AtomService", type: .unary)
             public static let getLatestAtomFromUser = Connect.MethodSpec(name: "GetLatestAtomFromUser", service: "atom.v1.AtomService", type: .unary)
+            public static let getActiveAtomsFromUser = Connect.MethodSpec(name: "GetActiveAtomsFromUser", service: "atom.v1.AtomService", type: .unary)
+            public static let getActiveFeedForSubscriber = Connect.MethodSpec(name: "GetActiveFeedForSubscriber", service: "atom.v1.AtomService", type: .unary)
             public static let listAtomsByUser = Connect.MethodSpec(name: "ListAtomsByUser", service: "atom.v1.AtomService", type: .unary)
             public static let updateAtom = Connect.MethodSpec(name: "UpdateAtom", service: "atom.v1.AtomService", type: .unary)
             public static let deleteAtom = Connect.MethodSpec(name: "DeleteAtom", service: "atom.v1.AtomService", type: .unary)

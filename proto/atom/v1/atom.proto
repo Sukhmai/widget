@@ -70,6 +70,22 @@ message GetLatestAtomFromUserResponse {
   Atom atom = 1; // unset when the user has no atoms yet
 }
 
+message GetActiveAtomsFromUserRequest {
+  string user_id = 1; // device UUID whose active (last-24h) atoms to fetch; required
+}
+
+message GetActiveAtomsFromUserResponse {
+  repeated Atom atoms = 1; // newest-first; empty when none in the last 24h
+}
+
+message GetActiveFeedForSubscriberRequest {
+  string subscriber_id = 1; // caller's device UUID; required
+}
+
+message GetActiveFeedForSubscriberResponse {
+  repeated Atom atoms = 1; // merged across all subscribed targets, newest-first, last 24h
+}
+
 message ListAtomsByUserRequest {
   string user_id     = 1; // device UUID whose atoms to list; required
   // Cursor fields from the last atom in the previous page.
@@ -103,6 +119,8 @@ service AtomService {
   rpc CreateAtom(CreateAtomRequest)                       returns (CreateAtomResponse)            {}
   rpc GetAtom(GetAtomRequest)                             returns (GetAtomResponse)               {}
   rpc GetLatestAtomFromUser(GetLatestAtomFromUserRequest) returns (GetLatestAtomFromUserResponse) {}
+  rpc GetActiveAtomsFromUser(GetActiveAtomsFromUserRequest)         returns (GetActiveAtomsFromUserResponse)         {}
+  rpc GetActiveFeedForSubscriber(GetActiveFeedForSubscriberRequest) returns (GetActiveFeedForSubscriberResponse)     {}
   rpc ListAtomsByUser(ListAtomsByUserRequest)             returns (ListAtomsByUserResponse)       {}
   rpc UpdateAtom(UpdateAtomRequest)             returns (UpdateAtomResponse)      {}
   rpc DeleteAtom(DeleteAtomRequest)             returns (DeleteAtomResponse)      {}

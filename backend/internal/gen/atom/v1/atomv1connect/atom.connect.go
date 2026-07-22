@@ -40,6 +40,12 @@ const (
 	// AtomServiceGetLatestAtomFromUserProcedure is the fully-qualified name of the AtomService's
 	// GetLatestAtomFromUser RPC.
 	AtomServiceGetLatestAtomFromUserProcedure = "/atom.v1.AtomService/GetLatestAtomFromUser"
+	// AtomServiceGetActiveAtomsFromUserProcedure is the fully-qualified name of the AtomService's
+	// GetActiveAtomsFromUser RPC.
+	AtomServiceGetActiveAtomsFromUserProcedure = "/atom.v1.AtomService/GetActiveAtomsFromUser"
+	// AtomServiceGetActiveFeedForSubscriberProcedure is the fully-qualified name of the AtomService's
+	// GetActiveFeedForSubscriber RPC.
+	AtomServiceGetActiveFeedForSubscriberProcedure = "/atom.v1.AtomService/GetActiveFeedForSubscriber"
 	// AtomServiceListAtomsByUserProcedure is the fully-qualified name of the AtomService's
 	// ListAtomsByUser RPC.
 	AtomServiceListAtomsByUserProcedure = "/atom.v1.AtomService/ListAtomsByUser"
@@ -54,6 +60,8 @@ type AtomServiceClient interface {
 	CreateAtom(context.Context, *connect.Request[v1.CreateAtomRequest]) (*connect.Response[v1.CreateAtomResponse], error)
 	GetAtom(context.Context, *connect.Request[v1.GetAtomRequest]) (*connect.Response[v1.GetAtomResponse], error)
 	GetLatestAtomFromUser(context.Context, *connect.Request[v1.GetLatestAtomFromUserRequest]) (*connect.Response[v1.GetLatestAtomFromUserResponse], error)
+	GetActiveAtomsFromUser(context.Context, *connect.Request[v1.GetActiveAtomsFromUserRequest]) (*connect.Response[v1.GetActiveAtomsFromUserResponse], error)
+	GetActiveFeedForSubscriber(context.Context, *connect.Request[v1.GetActiveFeedForSubscriberRequest]) (*connect.Response[v1.GetActiveFeedForSubscriberResponse], error)
 	ListAtomsByUser(context.Context, *connect.Request[v1.ListAtomsByUserRequest]) (*connect.Response[v1.ListAtomsByUserResponse], error)
 	UpdateAtom(context.Context, *connect.Request[v1.UpdateAtomRequest]) (*connect.Response[v1.UpdateAtomResponse], error)
 	DeleteAtom(context.Context, *connect.Request[v1.DeleteAtomRequest]) (*connect.Response[v1.DeleteAtomResponse], error)
@@ -88,6 +96,18 @@ func NewAtomServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(atomServiceMethods.ByName("GetLatestAtomFromUser")),
 			connect.WithClientOptions(opts...),
 		),
+		getActiveAtomsFromUser: connect.NewClient[v1.GetActiveAtomsFromUserRequest, v1.GetActiveAtomsFromUserResponse](
+			httpClient,
+			baseURL+AtomServiceGetActiveAtomsFromUserProcedure,
+			connect.WithSchema(atomServiceMethods.ByName("GetActiveAtomsFromUser")),
+			connect.WithClientOptions(opts...),
+		),
+		getActiveFeedForSubscriber: connect.NewClient[v1.GetActiveFeedForSubscriberRequest, v1.GetActiveFeedForSubscriberResponse](
+			httpClient,
+			baseURL+AtomServiceGetActiveFeedForSubscriberProcedure,
+			connect.WithSchema(atomServiceMethods.ByName("GetActiveFeedForSubscriber")),
+			connect.WithClientOptions(opts...),
+		),
 		listAtomsByUser: connect.NewClient[v1.ListAtomsByUserRequest, v1.ListAtomsByUserResponse](
 			httpClient,
 			baseURL+AtomServiceListAtomsByUserProcedure,
@@ -111,12 +131,14 @@ func NewAtomServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // atomServiceClient implements AtomServiceClient.
 type atomServiceClient struct {
-	createAtom            *connect.Client[v1.CreateAtomRequest, v1.CreateAtomResponse]
-	getAtom               *connect.Client[v1.GetAtomRequest, v1.GetAtomResponse]
-	getLatestAtomFromUser *connect.Client[v1.GetLatestAtomFromUserRequest, v1.GetLatestAtomFromUserResponse]
-	listAtomsByUser       *connect.Client[v1.ListAtomsByUserRequest, v1.ListAtomsByUserResponse]
-	updateAtom            *connect.Client[v1.UpdateAtomRequest, v1.UpdateAtomResponse]
-	deleteAtom            *connect.Client[v1.DeleteAtomRequest, v1.DeleteAtomResponse]
+	createAtom                 *connect.Client[v1.CreateAtomRequest, v1.CreateAtomResponse]
+	getAtom                    *connect.Client[v1.GetAtomRequest, v1.GetAtomResponse]
+	getLatestAtomFromUser      *connect.Client[v1.GetLatestAtomFromUserRequest, v1.GetLatestAtomFromUserResponse]
+	getActiveAtomsFromUser     *connect.Client[v1.GetActiveAtomsFromUserRequest, v1.GetActiveAtomsFromUserResponse]
+	getActiveFeedForSubscriber *connect.Client[v1.GetActiveFeedForSubscriberRequest, v1.GetActiveFeedForSubscriberResponse]
+	listAtomsByUser            *connect.Client[v1.ListAtomsByUserRequest, v1.ListAtomsByUserResponse]
+	updateAtom                 *connect.Client[v1.UpdateAtomRequest, v1.UpdateAtomResponse]
+	deleteAtom                 *connect.Client[v1.DeleteAtomRequest, v1.DeleteAtomResponse]
 }
 
 // CreateAtom calls atom.v1.AtomService.CreateAtom.
@@ -132,6 +154,16 @@ func (c *atomServiceClient) GetAtom(ctx context.Context, req *connect.Request[v1
 // GetLatestAtomFromUser calls atom.v1.AtomService.GetLatestAtomFromUser.
 func (c *atomServiceClient) GetLatestAtomFromUser(ctx context.Context, req *connect.Request[v1.GetLatestAtomFromUserRequest]) (*connect.Response[v1.GetLatestAtomFromUserResponse], error) {
 	return c.getLatestAtomFromUser.CallUnary(ctx, req)
+}
+
+// GetActiveAtomsFromUser calls atom.v1.AtomService.GetActiveAtomsFromUser.
+func (c *atomServiceClient) GetActiveAtomsFromUser(ctx context.Context, req *connect.Request[v1.GetActiveAtomsFromUserRequest]) (*connect.Response[v1.GetActiveAtomsFromUserResponse], error) {
+	return c.getActiveAtomsFromUser.CallUnary(ctx, req)
+}
+
+// GetActiveFeedForSubscriber calls atom.v1.AtomService.GetActiveFeedForSubscriber.
+func (c *atomServiceClient) GetActiveFeedForSubscriber(ctx context.Context, req *connect.Request[v1.GetActiveFeedForSubscriberRequest]) (*connect.Response[v1.GetActiveFeedForSubscriberResponse], error) {
+	return c.getActiveFeedForSubscriber.CallUnary(ctx, req)
 }
 
 // ListAtomsByUser calls atom.v1.AtomService.ListAtomsByUser.
@@ -154,6 +186,8 @@ type AtomServiceHandler interface {
 	CreateAtom(context.Context, *connect.Request[v1.CreateAtomRequest]) (*connect.Response[v1.CreateAtomResponse], error)
 	GetAtom(context.Context, *connect.Request[v1.GetAtomRequest]) (*connect.Response[v1.GetAtomResponse], error)
 	GetLatestAtomFromUser(context.Context, *connect.Request[v1.GetLatestAtomFromUserRequest]) (*connect.Response[v1.GetLatestAtomFromUserResponse], error)
+	GetActiveAtomsFromUser(context.Context, *connect.Request[v1.GetActiveAtomsFromUserRequest]) (*connect.Response[v1.GetActiveAtomsFromUserResponse], error)
+	GetActiveFeedForSubscriber(context.Context, *connect.Request[v1.GetActiveFeedForSubscriberRequest]) (*connect.Response[v1.GetActiveFeedForSubscriberResponse], error)
 	ListAtomsByUser(context.Context, *connect.Request[v1.ListAtomsByUserRequest]) (*connect.Response[v1.ListAtomsByUserResponse], error)
 	UpdateAtom(context.Context, *connect.Request[v1.UpdateAtomRequest]) (*connect.Response[v1.UpdateAtomResponse], error)
 	DeleteAtom(context.Context, *connect.Request[v1.DeleteAtomRequest]) (*connect.Response[v1.DeleteAtomResponse], error)
@@ -184,6 +218,18 @@ func NewAtomServiceHandler(svc AtomServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(atomServiceMethods.ByName("GetLatestAtomFromUser")),
 		connect.WithHandlerOptions(opts...),
 	)
+	atomServiceGetActiveAtomsFromUserHandler := connect.NewUnaryHandler(
+		AtomServiceGetActiveAtomsFromUserProcedure,
+		svc.GetActiveAtomsFromUser,
+		connect.WithSchema(atomServiceMethods.ByName("GetActiveAtomsFromUser")),
+		connect.WithHandlerOptions(opts...),
+	)
+	atomServiceGetActiveFeedForSubscriberHandler := connect.NewUnaryHandler(
+		AtomServiceGetActiveFeedForSubscriberProcedure,
+		svc.GetActiveFeedForSubscriber,
+		connect.WithSchema(atomServiceMethods.ByName("GetActiveFeedForSubscriber")),
+		connect.WithHandlerOptions(opts...),
+	)
 	atomServiceListAtomsByUserHandler := connect.NewUnaryHandler(
 		AtomServiceListAtomsByUserProcedure,
 		svc.ListAtomsByUser,
@@ -210,6 +256,10 @@ func NewAtomServiceHandler(svc AtomServiceHandler, opts ...connect.HandlerOption
 			atomServiceGetAtomHandler.ServeHTTP(w, r)
 		case AtomServiceGetLatestAtomFromUserProcedure:
 			atomServiceGetLatestAtomFromUserHandler.ServeHTTP(w, r)
+		case AtomServiceGetActiveAtomsFromUserProcedure:
+			atomServiceGetActiveAtomsFromUserHandler.ServeHTTP(w, r)
+		case AtomServiceGetActiveFeedForSubscriberProcedure:
+			atomServiceGetActiveFeedForSubscriberHandler.ServeHTTP(w, r)
 		case AtomServiceListAtomsByUserProcedure:
 			atomServiceListAtomsByUserHandler.ServeHTTP(w, r)
 		case AtomServiceUpdateAtomProcedure:
@@ -235,6 +285,14 @@ func (UnimplementedAtomServiceHandler) GetAtom(context.Context, *connect.Request
 
 func (UnimplementedAtomServiceHandler) GetLatestAtomFromUser(context.Context, *connect.Request[v1.GetLatestAtomFromUserRequest]) (*connect.Response[v1.GetLatestAtomFromUserResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("atom.v1.AtomService.GetLatestAtomFromUser is not implemented"))
+}
+
+func (UnimplementedAtomServiceHandler) GetActiveAtomsFromUser(context.Context, *connect.Request[v1.GetActiveAtomsFromUserRequest]) (*connect.Response[v1.GetActiveAtomsFromUserResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("atom.v1.AtomService.GetActiveAtomsFromUser is not implemented"))
+}
+
+func (UnimplementedAtomServiceHandler) GetActiveFeedForSubscriber(context.Context, *connect.Request[v1.GetActiveFeedForSubscriberRequest]) (*connect.Response[v1.GetActiveFeedForSubscriberResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("atom.v1.AtomService.GetActiveFeedForSubscriber is not implemented"))
 }
 
 func (UnimplementedAtomServiceHandler) ListAtomsByUser(context.Context, *connect.Request[v1.ListAtomsByUserRequest]) (*connect.Response[v1.ListAtomsByUserResponse], error) {
