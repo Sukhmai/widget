@@ -12,6 +12,13 @@ import DailyKit
 enum ContactsImporter {
     enum ImportError: Error { case accessDenied }
 
+    /// Whether Contacts access was already granted, so callers can silently
+    /// re-read the address book (e.g. a throttled background resync) without
+    /// risking a permission prompt.
+    static var isAuthorized: Bool {
+        CNContactStore.authorizationStatus(for: .contacts) == .authorized
+    }
+
     /// Request Contacts access and return each contact's name + phone numbers.
     /// Throws `.accessDenied` if the user declines.
     static func fetch() async throws -> [Social.Contact] {

@@ -32,6 +32,7 @@ message Resource {
     resource.v1.BlueskyPostMetadata  bluesky_post       = 20;
     resource.v1.InstagramPostMetadata instagram_post    = 21;
     resource.v1.RedditPostMetadata   reddit_post        = 16;
+    resource.v1.ImageMetadata        image              = 22;
   }
 }
 
@@ -115,6 +116,19 @@ message DeleteAtomRequest {
 
 message DeleteAtomResponse {}
 
+// PreviewResourceRequest asks the server to synchronously fetch display
+// metadata for a URL — used to render a live preview as the user pastes a
+// link, before any atom is created.
+message PreviewResourceRequest {
+  string url = 1;
+}
+
+message PreviewResourceResponse {
+  // fetched is always true and id is always empty: this resource is never
+  // persisted, it only carries freshly-fetched metadata for the preview.
+  Resource resource = 1;
+}
+
 service AtomService {
   rpc CreateAtom(CreateAtomRequest)                       returns (CreateAtomResponse)            {}
   rpc GetAtom(GetAtomRequest)                             returns (GetAtomResponse)               {}
@@ -124,4 +138,5 @@ service AtomService {
   rpc ListAtomsByUser(ListAtomsByUserRequest)             returns (ListAtomsByUserResponse)       {}
   rpc UpdateAtom(UpdateAtomRequest)             returns (UpdateAtomResponse)      {}
   rpc DeleteAtom(DeleteAtomRequest)             returns (DeleteAtomResponse)      {}
+  rpc PreviewResource(PreviewResourceRequest)   returns (PreviewResourceResponse) {}
 }

@@ -51,6 +51,7 @@ type Resource struct {
 	//	*Resource_BlueskyPost
 	//	*Resource_InstagramPost
 	//	*Resource_RedditPost
+	//	*Resource_Image
 	Metadata      isResource_Metadata `protobuf_oneof:"metadata"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -265,6 +266,15 @@ func (x *Resource) GetRedditPost() *v1.RedditPostMetadata {
 	return nil
 }
 
+func (x *Resource) GetImage() *v1.ImageMetadata {
+	if x != nil {
+		if x, ok := x.Metadata.(*Resource_Image); ok {
+			return x.Image
+		}
+	}
+	return nil
+}
+
 type isResource_Metadata interface {
 	isResource_Metadata()
 }
@@ -333,6 +343,10 @@ type Resource_RedditPost struct {
 	RedditPost *v1.RedditPostMetadata `protobuf:"bytes,16,opt,name=reddit_post,json=redditPost,proto3,oneof"`
 }
 
+type Resource_Image struct {
+	Image *v1.ImageMetadata `protobuf:"bytes,22,opt,name=image,proto3,oneof"`
+}
+
 func (*Resource_SpotifyTrack) isResource_Metadata() {}
 
 func (*Resource_Movie) isResource_Metadata() {}
@@ -364,6 +378,8 @@ func (*Resource_BlueskyPost) isResource_Metadata() {}
 func (*Resource_InstagramPost) isResource_Metadata() {}
 
 func (*Resource_RedditPost) isResource_Metadata() {}
+
+func (*Resource_Image) isResource_Metadata() {}
 
 type Atom struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1203,11 +1219,104 @@ func (*DeleteAtomResponse) Descriptor() ([]byte, []int) {
 	return file_atom_v1_atom_proto_rawDescGZIP(), []int{17}
 }
 
+// PreviewResourceRequest asks the server to synchronously fetch display
+// metadata for a URL — used to render a live preview as the user pastes a
+// link, before any atom is created.
+type PreviewResourceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PreviewResourceRequest) Reset() {
+	*x = PreviewResourceRequest{}
+	mi := &file_atom_v1_atom_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PreviewResourceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PreviewResourceRequest) ProtoMessage() {}
+
+func (x *PreviewResourceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_atom_v1_atom_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PreviewResourceRequest.ProtoReflect.Descriptor instead.
+func (*PreviewResourceRequest) Descriptor() ([]byte, []int) {
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *PreviewResourceRequest) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+type PreviewResourceResponse struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// fetched is always true and id is always empty: this resource is never
+	// persisted, it only carries freshly-fetched metadata for the preview.
+	Resource      *Resource `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PreviewResourceResponse) Reset() {
+	*x = PreviewResourceResponse{}
+	mi := &file_atom_v1_atom_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PreviewResourceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PreviewResourceResponse) ProtoMessage() {}
+
+func (x *PreviewResourceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_atom_v1_atom_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PreviewResourceResponse.ProtoReflect.Descriptor instead.
+func (*PreviewResourceResponse) Descriptor() ([]byte, []int) {
+	return file_atom_v1_atom_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *PreviewResourceResponse) GetResource() *Resource {
+	if x != nil {
+		return x.Resource
+	}
+	return nil
+}
+
 var File_atom_v1_atom_proto protoreflect.FileDescriptor
 
 const file_atom_v1_atom_proto_rawDesc = "" +
 	"\n" +
-	"\x12atom/v1/atom.proto\x12\aatom.v1\x1a\x1aresource/v1/resource.proto\"\xf4\b\n" +
+	"\x12atom/v1/atom.proto\x12\aatom.v1\x1a\x1aresource/v1/resource.proto\"\xa8\t\n" +
 	"\bResource\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x10\n" +
 	"\x03url\x18\x02 \x01(\tR\x03url\x12\x16\n" +
@@ -1232,7 +1341,8 @@ const file_atom_v1_atom_proto_rawDesc = "" +
 	"\fbluesky_post\x18\x14 \x01(\v2 .resource.v1.BlueskyPostMetadataH\x00R\vblueskyPost\x12K\n" +
 	"\x0einstagram_post\x18\x15 \x01(\v2\".resource.v1.InstagramPostMetadataH\x00R\rinstagramPost\x12B\n" +
 	"\vreddit_post\x18\x10 \x01(\v2\x1f.resource.v1.RedditPostMetadataH\x00R\n" +
-	"redditPostB\n" +
+	"redditPost\x122\n" +
+	"\x05image\x18\x16 \x01(\v2\x1a.resource.v1.ImageMetadataH\x00R\x05imageB\n" +
 	"\n" +
 	"\bmetadata\"\xae\x01\n" +
 	"\x04Atom\x12\x0e\n" +
@@ -1281,7 +1391,11 @@ const file_atom_v1_atom_proto_rawDesc = "" +
 	"\x04atom\x18\x01 \x01(\v2\r.atom.v1.AtomR\x04atom\",\n" +
 	"\x11DeleteAtomRequest\x12\x17\n" +
 	"\aatom_id\x18\x01 \x01(\tR\x06atomId\"\x14\n" +
-	"\x12DeleteAtomResponse2\xd0\x05\n" +
+	"\x12DeleteAtomResponse\"*\n" +
+	"\x16PreviewResourceRequest\x12\x10\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\"H\n" +
+	"\x17PreviewResourceResponse\x12-\n" +
+	"\bresource\x18\x01 \x01(\v2\x11.atom.v1.ResourceR\bresource2\xa8\x06\n" +
 	"\vAtomService\x12G\n" +
 	"\n" +
 	"CreateAtom\x12\x1a.atom.v1.CreateAtomRequest\x1a\x1b.atom.v1.CreateAtomResponse\"\x00\x12>\n" +
@@ -1293,7 +1407,8 @@ const file_atom_v1_atom_proto_rawDesc = "" +
 	"\n" +
 	"UpdateAtom\x12\x1a.atom.v1.UpdateAtomRequest\x1a\x1b.atom.v1.UpdateAtomResponse\"\x00\x12G\n" +
 	"\n" +
-	"DeleteAtom\x12\x1a.atom.v1.DeleteAtomRequest\x1a\x1b.atom.v1.DeleteAtomResponse\"\x00B?Z=github.com/sukhmai/widget/backend/internal/gen/atom/v1;atomv1b\x06proto3"
+	"DeleteAtom\x12\x1a.atom.v1.DeleteAtomRequest\x1a\x1b.atom.v1.DeleteAtomResponse\"\x00\x12V\n" +
+	"\x0fPreviewResource\x12\x1f.atom.v1.PreviewResourceRequest\x1a .atom.v1.PreviewResourceResponse\"\x00B?Z=github.com/sukhmai/widget/backend/internal/gen/atom/v1;atomv1b\x06proto3"
 
 var (
 	file_atom_v1_atom_proto_rawDescOnce sync.Once
@@ -1307,7 +1422,7 @@ func file_atom_v1_atom_proto_rawDescGZIP() []byte {
 	return file_atom_v1_atom_proto_rawDescData
 }
 
-var file_atom_v1_atom_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
+var file_atom_v1_atom_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
 var file_atom_v1_atom_proto_goTypes = []any{
 	(*Resource)(nil),                           // 0: atom.v1.Resource
 	(*Atom)(nil),                               // 1: atom.v1.Atom
@@ -1327,67 +1442,74 @@ var file_atom_v1_atom_proto_goTypes = []any{
 	(*UpdateAtomResponse)(nil),                 // 15: atom.v1.UpdateAtomResponse
 	(*DeleteAtomRequest)(nil),                  // 16: atom.v1.DeleteAtomRequest
 	(*DeleteAtomResponse)(nil),                 // 17: atom.v1.DeleteAtomResponse
-	(*v1.MusicTrackMetadata)(nil),              // 18: resource.v1.MusicTrackMetadata
-	(*v1.MovieMetadata)(nil),                   // 19: resource.v1.MovieMetadata
-	(*v1.BookMetadata)(nil),                    // 20: resource.v1.BookMetadata
-	(*v1.TweetMetadata)(nil),                   // 21: resource.v1.TweetMetadata
-	(*v1.WikipediaMetadata)(nil),               // 22: resource.v1.WikipediaMetadata
-	(*v1.SteamGameMetadata)(nil),               // 23: resource.v1.SteamGameMetadata
-	(*v1.SubstackPostMetadata)(nil),            // 24: resource.v1.SubstackPostMetadata
-	(*v1.GenericMetadata)(nil),                 // 25: resource.v1.GenericMetadata
-	(*v1.YouTubeVideoMetadata)(nil),            // 26: resource.v1.YouTubeVideoMetadata
-	(*v1.TikTokVideoMetadata)(nil),             // 27: resource.v1.TikTokVideoMetadata
-	(*v1.AnimeMetadata)(nil),                   // 28: resource.v1.AnimeMetadata
-	(*v1.BlueskyPostMetadata)(nil),             // 29: resource.v1.BlueskyPostMetadata
-	(*v1.InstagramPostMetadata)(nil),           // 30: resource.v1.InstagramPostMetadata
-	(*v1.RedditPostMetadata)(nil),              // 31: resource.v1.RedditPostMetadata
+	(*PreviewResourceRequest)(nil),             // 18: atom.v1.PreviewResourceRequest
+	(*PreviewResourceResponse)(nil),            // 19: atom.v1.PreviewResourceResponse
+	(*v1.MusicTrackMetadata)(nil),              // 20: resource.v1.MusicTrackMetadata
+	(*v1.MovieMetadata)(nil),                   // 21: resource.v1.MovieMetadata
+	(*v1.BookMetadata)(nil),                    // 22: resource.v1.BookMetadata
+	(*v1.TweetMetadata)(nil),                   // 23: resource.v1.TweetMetadata
+	(*v1.WikipediaMetadata)(nil),               // 24: resource.v1.WikipediaMetadata
+	(*v1.SteamGameMetadata)(nil),               // 25: resource.v1.SteamGameMetadata
+	(*v1.SubstackPostMetadata)(nil),            // 26: resource.v1.SubstackPostMetadata
+	(*v1.GenericMetadata)(nil),                 // 27: resource.v1.GenericMetadata
+	(*v1.YouTubeVideoMetadata)(nil),            // 28: resource.v1.YouTubeVideoMetadata
+	(*v1.TikTokVideoMetadata)(nil),             // 29: resource.v1.TikTokVideoMetadata
+	(*v1.AnimeMetadata)(nil),                   // 30: resource.v1.AnimeMetadata
+	(*v1.BlueskyPostMetadata)(nil),             // 31: resource.v1.BlueskyPostMetadata
+	(*v1.InstagramPostMetadata)(nil),           // 32: resource.v1.InstagramPostMetadata
+	(*v1.RedditPostMetadata)(nil),              // 33: resource.v1.RedditPostMetadata
+	(*v1.ImageMetadata)(nil),                   // 34: resource.v1.ImageMetadata
 }
 var file_atom_v1_atom_proto_depIdxs = []int32{
-	18, // 0: atom.v1.Resource.spotify_track:type_name -> resource.v1.MusicTrackMetadata
-	19, // 1: atom.v1.Resource.movie:type_name -> resource.v1.MovieMetadata
-	20, // 2: atom.v1.Resource.book:type_name -> resource.v1.BookMetadata
-	21, // 3: atom.v1.Resource.tweet:type_name -> resource.v1.TweetMetadata
-	22, // 4: atom.v1.Resource.wikipedia:type_name -> resource.v1.WikipediaMetadata
-	23, // 5: atom.v1.Resource.steam_game:type_name -> resource.v1.SteamGameMetadata
-	24, // 6: atom.v1.Resource.substack_post:type_name -> resource.v1.SubstackPostMetadata
-	25, // 7: atom.v1.Resource.generic:type_name -> resource.v1.GenericMetadata
-	26, // 8: atom.v1.Resource.youtube_video:type_name -> resource.v1.YouTubeVideoMetadata
-	19, // 9: atom.v1.Resource.imdb_movie:type_name -> resource.v1.MovieMetadata
-	27, // 10: atom.v1.Resource.tiktok_video:type_name -> resource.v1.TikTokVideoMetadata
-	28, // 11: atom.v1.Resource.mal_anime:type_name -> resource.v1.AnimeMetadata
-	28, // 12: atom.v1.Resource.anilist_anime:type_name -> resource.v1.AnimeMetadata
-	29, // 13: atom.v1.Resource.bluesky_post:type_name -> resource.v1.BlueskyPostMetadata
-	30, // 14: atom.v1.Resource.instagram_post:type_name -> resource.v1.InstagramPostMetadata
-	31, // 15: atom.v1.Resource.reddit_post:type_name -> resource.v1.RedditPostMetadata
-	0,  // 16: atom.v1.Atom.resource:type_name -> atom.v1.Resource
-	1,  // 17: atom.v1.CreateAtomResponse.atom:type_name -> atom.v1.Atom
-	1,  // 18: atom.v1.GetAtomResponse.atom:type_name -> atom.v1.Atom
-	1,  // 19: atom.v1.GetLatestAtomFromUserResponse.atom:type_name -> atom.v1.Atom
-	1,  // 20: atom.v1.GetActiveAtomsFromUserResponse.atoms:type_name -> atom.v1.Atom
-	1,  // 21: atom.v1.GetActiveFeedForSubscriberResponse.atoms:type_name -> atom.v1.Atom
-	1,  // 22: atom.v1.ListAtomsByUserResponse.atoms:type_name -> atom.v1.Atom
-	1,  // 23: atom.v1.UpdateAtomResponse.atom:type_name -> atom.v1.Atom
-	2,  // 24: atom.v1.AtomService.CreateAtom:input_type -> atom.v1.CreateAtomRequest
-	4,  // 25: atom.v1.AtomService.GetAtom:input_type -> atom.v1.GetAtomRequest
-	6,  // 26: atom.v1.AtomService.GetLatestAtomFromUser:input_type -> atom.v1.GetLatestAtomFromUserRequest
-	8,  // 27: atom.v1.AtomService.GetActiveAtomsFromUser:input_type -> atom.v1.GetActiveAtomsFromUserRequest
-	10, // 28: atom.v1.AtomService.GetActiveFeedForSubscriber:input_type -> atom.v1.GetActiveFeedForSubscriberRequest
-	12, // 29: atom.v1.AtomService.ListAtomsByUser:input_type -> atom.v1.ListAtomsByUserRequest
-	14, // 30: atom.v1.AtomService.UpdateAtom:input_type -> atom.v1.UpdateAtomRequest
-	16, // 31: atom.v1.AtomService.DeleteAtom:input_type -> atom.v1.DeleteAtomRequest
-	3,  // 32: atom.v1.AtomService.CreateAtom:output_type -> atom.v1.CreateAtomResponse
-	5,  // 33: atom.v1.AtomService.GetAtom:output_type -> atom.v1.GetAtomResponse
-	7,  // 34: atom.v1.AtomService.GetLatestAtomFromUser:output_type -> atom.v1.GetLatestAtomFromUserResponse
-	9,  // 35: atom.v1.AtomService.GetActiveAtomsFromUser:output_type -> atom.v1.GetActiveAtomsFromUserResponse
-	11, // 36: atom.v1.AtomService.GetActiveFeedForSubscriber:output_type -> atom.v1.GetActiveFeedForSubscriberResponse
-	13, // 37: atom.v1.AtomService.ListAtomsByUser:output_type -> atom.v1.ListAtomsByUserResponse
-	15, // 38: atom.v1.AtomService.UpdateAtom:output_type -> atom.v1.UpdateAtomResponse
-	17, // 39: atom.v1.AtomService.DeleteAtom:output_type -> atom.v1.DeleteAtomResponse
-	32, // [32:40] is the sub-list for method output_type
-	24, // [24:32] is the sub-list for method input_type
-	24, // [24:24] is the sub-list for extension type_name
-	24, // [24:24] is the sub-list for extension extendee
-	0,  // [0:24] is the sub-list for field type_name
+	20, // 0: atom.v1.Resource.spotify_track:type_name -> resource.v1.MusicTrackMetadata
+	21, // 1: atom.v1.Resource.movie:type_name -> resource.v1.MovieMetadata
+	22, // 2: atom.v1.Resource.book:type_name -> resource.v1.BookMetadata
+	23, // 3: atom.v1.Resource.tweet:type_name -> resource.v1.TweetMetadata
+	24, // 4: atom.v1.Resource.wikipedia:type_name -> resource.v1.WikipediaMetadata
+	25, // 5: atom.v1.Resource.steam_game:type_name -> resource.v1.SteamGameMetadata
+	26, // 6: atom.v1.Resource.substack_post:type_name -> resource.v1.SubstackPostMetadata
+	27, // 7: atom.v1.Resource.generic:type_name -> resource.v1.GenericMetadata
+	28, // 8: atom.v1.Resource.youtube_video:type_name -> resource.v1.YouTubeVideoMetadata
+	21, // 9: atom.v1.Resource.imdb_movie:type_name -> resource.v1.MovieMetadata
+	29, // 10: atom.v1.Resource.tiktok_video:type_name -> resource.v1.TikTokVideoMetadata
+	30, // 11: atom.v1.Resource.mal_anime:type_name -> resource.v1.AnimeMetadata
+	30, // 12: atom.v1.Resource.anilist_anime:type_name -> resource.v1.AnimeMetadata
+	31, // 13: atom.v1.Resource.bluesky_post:type_name -> resource.v1.BlueskyPostMetadata
+	32, // 14: atom.v1.Resource.instagram_post:type_name -> resource.v1.InstagramPostMetadata
+	33, // 15: atom.v1.Resource.reddit_post:type_name -> resource.v1.RedditPostMetadata
+	34, // 16: atom.v1.Resource.image:type_name -> resource.v1.ImageMetadata
+	0,  // 17: atom.v1.Atom.resource:type_name -> atom.v1.Resource
+	1,  // 18: atom.v1.CreateAtomResponse.atom:type_name -> atom.v1.Atom
+	1,  // 19: atom.v1.GetAtomResponse.atom:type_name -> atom.v1.Atom
+	1,  // 20: atom.v1.GetLatestAtomFromUserResponse.atom:type_name -> atom.v1.Atom
+	1,  // 21: atom.v1.GetActiveAtomsFromUserResponse.atoms:type_name -> atom.v1.Atom
+	1,  // 22: atom.v1.GetActiveFeedForSubscriberResponse.atoms:type_name -> atom.v1.Atom
+	1,  // 23: atom.v1.ListAtomsByUserResponse.atoms:type_name -> atom.v1.Atom
+	1,  // 24: atom.v1.UpdateAtomResponse.atom:type_name -> atom.v1.Atom
+	0,  // 25: atom.v1.PreviewResourceResponse.resource:type_name -> atom.v1.Resource
+	2,  // 26: atom.v1.AtomService.CreateAtom:input_type -> atom.v1.CreateAtomRequest
+	4,  // 27: atom.v1.AtomService.GetAtom:input_type -> atom.v1.GetAtomRequest
+	6,  // 28: atom.v1.AtomService.GetLatestAtomFromUser:input_type -> atom.v1.GetLatestAtomFromUserRequest
+	8,  // 29: atom.v1.AtomService.GetActiveAtomsFromUser:input_type -> atom.v1.GetActiveAtomsFromUserRequest
+	10, // 30: atom.v1.AtomService.GetActiveFeedForSubscriber:input_type -> atom.v1.GetActiveFeedForSubscriberRequest
+	12, // 31: atom.v1.AtomService.ListAtomsByUser:input_type -> atom.v1.ListAtomsByUserRequest
+	14, // 32: atom.v1.AtomService.UpdateAtom:input_type -> atom.v1.UpdateAtomRequest
+	16, // 33: atom.v1.AtomService.DeleteAtom:input_type -> atom.v1.DeleteAtomRequest
+	18, // 34: atom.v1.AtomService.PreviewResource:input_type -> atom.v1.PreviewResourceRequest
+	3,  // 35: atom.v1.AtomService.CreateAtom:output_type -> atom.v1.CreateAtomResponse
+	5,  // 36: atom.v1.AtomService.GetAtom:output_type -> atom.v1.GetAtomResponse
+	7,  // 37: atom.v1.AtomService.GetLatestAtomFromUser:output_type -> atom.v1.GetLatestAtomFromUserResponse
+	9,  // 38: atom.v1.AtomService.GetActiveAtomsFromUser:output_type -> atom.v1.GetActiveAtomsFromUserResponse
+	11, // 39: atom.v1.AtomService.GetActiveFeedForSubscriber:output_type -> atom.v1.GetActiveFeedForSubscriberResponse
+	13, // 40: atom.v1.AtomService.ListAtomsByUser:output_type -> atom.v1.ListAtomsByUserResponse
+	15, // 41: atom.v1.AtomService.UpdateAtom:output_type -> atom.v1.UpdateAtomResponse
+	17, // 42: atom.v1.AtomService.DeleteAtom:output_type -> atom.v1.DeleteAtomResponse
+	19, // 43: atom.v1.AtomService.PreviewResource:output_type -> atom.v1.PreviewResourceResponse
+	35, // [35:44] is the sub-list for method output_type
+	26, // [26:35] is the sub-list for method input_type
+	26, // [26:26] is the sub-list for extension type_name
+	26, // [26:26] is the sub-list for extension extendee
+	0,  // [0:26] is the sub-list for field type_name
 }
 
 func init() { file_atom_v1_atom_proto_init() }
@@ -1412,6 +1534,7 @@ func file_atom_v1_atom_proto_init() {
 		(*Resource_BlueskyPost)(nil),
 		(*Resource_InstagramPost)(nil),
 		(*Resource_RedditPost)(nil),
+		(*Resource_Image)(nil),
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -1419,7 +1542,7 @@ func file_atom_v1_atom_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_atom_v1_atom_proto_rawDesc), len(file_atom_v1_atom_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   18,
+			NumMessages:   20,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

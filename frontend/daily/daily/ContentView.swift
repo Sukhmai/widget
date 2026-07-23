@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var text = ""
     @State private var status: String?
     @State private var posting = false
+    private enum Field: Hashable { case url, text }
+    @FocusState private var focusedField: Field?
 
     private var canPost: Bool {
         !posting && (!url.trimmingCharacters(in: .whitespaces).isEmpty
@@ -29,12 +31,41 @@ struct ContentView: View {
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .focused($focusedField, equals: .url)
+                        // A paste lands the whole URL in one change (many
+                        // characters at once); typing adds one at a time. Only
+                        // dismiss on the former, so the preview has room to show
+                        // without interrupting someone still typing a URL by hand.
+                        .onChange(of: url) { old, new in
+                            if new.count > old.count + 1 {
+                                focusedField = nil
+                            }
+                        }
                 }
                 Section("Speak on this") {
                     TextField("Only if you want", text: $text, axis: .vertical)
                         .lineLimit(3...6)
+                        .focused($focusedField, equals: .text)
                 }
-                Section {
+            }
+            // Form/List has no tap-outside-to-dismiss by default — only
+            // interactive scrolling and focus changes dismiss the keyboard for
+            // free. A plain (non-simultaneous) tap gesture on the Form itself
+            // only fires for taps that land on blank row background, since a
+            // descendant control's own gesture (TextField, Button) still wins
+            // for taps on it — so this doesn't interfere with either field.
+            .onTapGesture { focusedField = nil }
+            // The preview's card resizes per widget-size tab, and one of its
+            // sizes (Large) hosts an Image behind a GeometryReader. Inside a
+            // Form/List row, UIKit's self-sizing-cell solver can pathologically
+            // stall resolving that combination's height — moving it to a
+            // safeAreaInset takes it out of the List entirely, so it's a plain
+            // resize instead of a table cell re-layout.
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 12) {
+                    if !url.trimmingCharacters(in: .whitespaces).isEmpty {
+                        LinkPreviewView(url: url, userText: text)
+                    }
                     HStack {
                         Spacer()
                         Button(action: { Task { await post() } }) {
@@ -46,11 +77,13 @@ struct ContentView: View {
                         .disabled(!canPost)
                         Spacer()
                     }
-                    .listRowBackground(Color.clear)
+                    if let status {
+                        Text(status).font(.footnote).foregroundStyle(.secondary)
+                    }
                 }
-                if let status {
-                    Section { Text(status).font(.footnote).foregroundStyle(.secondary) }
-                }
+                .padding()
+                .background(.bar)
+                .onTapGesture { focusedField = nil }
             }
             .navigationTitle("Daily")
             .toolbar {
@@ -74,7 +107,24 @@ struct ContentView: View {
         // has entered their own number in FriendsView).
         .task {
             if Social.isRegistered { await Social.register() }
+            await syncFriendsIfDue()
         }
+    }
+
+    /// Silently re-reads Contacts and re-syncs friends on a throttled cadence.
+    /// New signups are already caught server-side (MatchContacts remembers each
+    /// subscriber's contact hashes and auto-subscribes them when a match later
+    /// registers) — this instead catches what only a fresh Contacts read can:
+    /// contacts added, edited, or removed on-device. Reading Contacts again
+    /// after the first grant never re-prompts, so this can run unattended.
+    private func syncFriendsIfDue() async {
+        let resyncInterval: TimeInterval = 7 * 24 * 3600
+        guard Social.isRegistered, ContactsImporter.isAuthorized else { return }
+        if let last = Social.lastSyncedAt, Date().timeIntervalSince(last) < resyncInterval { return }
+
+        guard let contacts = try? await ContactsImporter.fetch() else { return }
+        await Social.syncFriends(from: contacts)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private func post() async {
@@ -96,7 +146,6 @@ struct ContentView: View {
 
         url = ""
         text = ""
-        status = "Posted!"
         WidgetCenter.shared.reloadAllTimelines()
     }
 

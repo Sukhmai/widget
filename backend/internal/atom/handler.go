@@ -5,6 +5,7 @@ package atom
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"connectrpc.com/connect"
@@ -20,17 +21,23 @@ import (
 
 const defaultPageSize = 20
 
+// previewFetchTimeout bounds PreviewResource's synchronous fetcher call so a
+// slow or hanging source can't stall the request indefinitely.
+const previewFetchTimeout = 8 * time.Second
+
 // Handler serves the AtomService RPCs.
 type Handler struct {
-	db  *db.Queries
-	rdb *redis.Client
+	db       *db.Queries
+	rdb      *redis.Client
+	fetchers map[resource.Source]resource.Fetcher
 }
 
 var _ atomv1connect.AtomServiceHandler = (*Handler)(nil)
 
-// New builds an AtomService handler over the given queries and redis client.
-func New(queries *db.Queries, rdb *redis.Client) *Handler {
-	return &Handler{db: queries, rdb: rdb}
+// New builds an AtomService handler over the given queries, redis client, and
+// resource fetchers (used by PreviewResource for synchronous URL previews).
+func New(queries *db.Queries, rdb *redis.Client, fetchers map[resource.Source]resource.Fetcher) *Handler {
+	return &Handler{db: queries, rdb: rdb, fetchers: fetchers}
 }
 
 func (h *Handler) CreateAtom(ctx context.Context, req *connect.Request[atomv1.CreateAtomRequest]) (*connect.Response[atomv1.CreateAtomResponse], error) {
@@ -237,6 +244,34 @@ func (h *Handler) UpdateAtom(ctx context.Context, req *connect.Request[atomv1.Up
 
 	return connect.NewResponse(&atomv1.UpdateAtomResponse{
 		Atom: getAtomRowToProto(row),
+	}), nil
+}
+
+// PreviewResource synchronously fetches display metadata for a URL so the
+// client can render a live preview before an atom is created. Unlike
+// CreateAtom, nothing is persisted and no worker job is enqueued.
+func (h *Handler) PreviewResource(ctx context.Context, req *connect.Request[atomv1.PreviewResourceRequest]) (*connect.Response[atomv1.PreviewResourceResponse], error) {
+	url := req.Msg.Url
+	if url == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("url is required"))
+	}
+
+	source := resource.DetectSource(url)
+	fetcher, ok := h.fetchers[source]
+	if !ok {
+		return nil, connect.NewError(connect.CodeUnimplemented, fmt.Errorf("no fetcher registered for source %q", source))
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, previewFetchTimeout)
+	defer cancel()
+
+	metadata, err := fetcher.Fetch(ctx, url)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeUnavailable, fmt.Errorf("fetch %q: %w", url, err))
+	}
+
+	return connect.NewResponse(&atomv1.PreviewResourceResponse{
+		Resource: resourceToProto("", url, string(source), true, metadata),
 	}), nil
 }
 

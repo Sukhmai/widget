@@ -115,6 +115,11 @@ func resourceToProto(id, url, source string, fetched bool, metadata []byte) *ato
 		if err := protojson.Unmarshal(metadata, &m); err == nil {
 			r.Metadata = &atomv1.Resource_InstagramPost{InstagramPost: &m}
 		}
+	case resource.SourceImage:
+		var m resourcev1.ImageMetadata
+		if err := protojson.Unmarshal(metadata, &m); err == nil {
+			r.Metadata = &atomv1.Resource_Image{Image: &m}
+		}
 	case resource.SourceGeneric:
 		var m resourcev1.GenericMetadata
 		if err := protojson.Unmarshal(metadata, &m); err == nil {

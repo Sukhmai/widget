@@ -167,6 +167,14 @@ public nonisolated struct Atom_V1_Resource: Sendable {
     set {metadata = .redditPost(newValue)}
   }
 
+  public var image: Resource_V1_ImageMetadata {
+    get {
+      if case .image(let v)? = metadata {return v}
+      return Resource_V1_ImageMetadata()
+    }
+    set {metadata = .image(newValue)}
+  }
+
   public var unknownFields = SwiftProtobuf.UnknownStorage()
 
   /// metadata is populated once the worker has fetched it (fetched = true).
@@ -188,6 +196,7 @@ public nonisolated struct Atom_V1_Resource: Sendable {
     case blueskyPost(Resource_V1_BlueskyPostMetadata)
     case instagramPost(Resource_V1_InstagramPostMetadata)
     case redditPost(Resource_V1_RedditPostMetadata)
+    case image(Resource_V1_ImageMetadata)
 
   }
 
@@ -498,13 +507,51 @@ public nonisolated struct Atom_V1_DeleteAtomResponse: Sendable {
   public init() {}
 }
 
+/// PreviewResourceRequest asks the server to synchronously fetch display
+/// metadata for a URL — used to render a live preview as the user pastes a
+/// link, before any atom is created.
+public nonisolated struct Atom_V1_PreviewResourceRequest: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  public var url: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
+public nonisolated struct Atom_V1_PreviewResourceResponse: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// fetched is always true and id is always empty: this resource is never
+  /// persisted, it only carries freshly-fetched metadata for the preview.
+  public var resource: Atom_V1_Resource {
+    get {_resource ?? Atom_V1_Resource()}
+    set {_resource = newValue}
+  }
+  /// Returns true if `resource` has been explicitly set.
+  public var hasResource: Bool {self._resource != nil}
+  /// Clears the value of `resource`. Subsequent reads from it will return its default value.
+  public mutating func clearResource() {self._resource = nil}
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+
+  fileprivate var _resource: Atom_V1_Resource? = nil
+}
+
 // MARK: - Code below here is support for the SwiftProtobuf runtime.
 
 fileprivate nonisolated let _protobuf_package = "atom.v1"
 
 nonisolated extension Atom_V1_Resource: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
   public static let protoMessageName: String = _protobuf_package + ".Resource"
-  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}url\0\u{1}source\0\u{3}spotify_track\0\u{1}fetched\0\u{1}movie\0\u{1}book\0\u{1}tweet\0\u{1}wikipedia\0\u{3}steam_game\0\u{3}substack_post\0\u{1}generic\0\u{3}youtube_video\0\u{4}\u{2}imdb_movie\0\u{3}reddit_post\0\u{3}tiktok_video\0\u{3}mal_anime\0\u{3}anilist_anime\0\u{3}bluesky_post\0\u{3}instagram_post\0")
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}id\0\u{1}url\0\u{1}source\0\u{3}spotify_track\0\u{1}fetched\0\u{1}movie\0\u{1}book\0\u{1}tweet\0\u{1}wikipedia\0\u{3}steam_game\0\u{3}substack_post\0\u{1}generic\0\u{3}youtube_video\0\u{4}\u{2}imdb_movie\0\u{3}reddit_post\0\u{3}tiktok_video\0\u{3}mal_anime\0\u{3}anilist_anime\0\u{3}bluesky_post\0\u{3}instagram_post\0\u{1}image\0")
 
   public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
     while let fieldNumber = try decoder.nextFieldNumber() {
@@ -724,6 +771,19 @@ nonisolated extension Atom_V1_Resource: SwiftProtobuf.Message, SwiftProtobuf._Me
           self.metadata = .instagramPost(v)
         }
       }()
+      case 22: try {
+        var v: Resource_V1_ImageMetadata?
+        var hadOneofValue = false
+        if let current = self.metadata {
+          hadOneofValue = true
+          if case .image(let m) = current {v = m}
+        }
+        try decoder.decodeSingularMessageField(value: &v)
+        if let v = v {
+          if hadOneofValue {try decoder.handleConflictingOneOf()}
+          self.metadata = .image(v)
+        }
+      }()
       default: break
       }
     }
@@ -809,6 +869,10 @@ nonisolated extension Atom_V1_Resource: SwiftProtobuf.Message, SwiftProtobuf._Me
     case .instagramPost?: try {
       guard case .instagramPost(let v)? = self.metadata else { preconditionFailure() }
       try visitor.visitSingularMessageField(value: v, fieldNumber: 21)
+    }()
+    case .image?: try {
+      guard case .image(let v)? = self.metadata else { preconditionFailure() }
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 22)
     }()
     default: break
     }
@@ -1446,6 +1510,70 @@ nonisolated extension Atom_V1_DeleteAtomResponse: SwiftProtobuf.Message, SwiftPr
   }
 
   public static func ==(lhs: Atom_V1_DeleteAtomResponse, rhs: Atom_V1_DeleteAtomResponse) -> Bool {
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Atom_V1_PreviewResourceRequest: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PreviewResourceRequest"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}url\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.url) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.url.isEmpty {
+      try visitor.visitSingularStringField(value: self.url, fieldNumber: 1)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Atom_V1_PreviewResourceRequest, rhs: Atom_V1_PreviewResourceRequest) -> Bool {
+    if lhs.url != rhs.url {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Atom_V1_PreviewResourceResponse: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".PreviewResourceResponse"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{1}resource\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularMessageField(value: &self._resource) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    // The use of inline closures is to circumvent an issue where the compiler
+    // allocates stack space for every if/case branch local when no optimizations
+    // are enabled. https://github.com/apple/swift-protobuf/issues/1034 and
+    // https://github.com/apple/swift-protobuf/issues/1182
+    try { if let v = self._resource {
+      try visitor.visitSingularMessageField(value: v, fieldNumber: 1)
+    } }()
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Atom_V1_PreviewResourceResponse, rhs: Atom_V1_PreviewResourceResponse) -> Bool {
+    if lhs._resource != rhs._resource {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

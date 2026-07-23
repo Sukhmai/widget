@@ -31,3 +31,21 @@ UPDATE users SET push_token = $2, updated_at = NOW() WHERE device_id = $1;
 SELECT u.push_token FROM subscriptions s
 JOIN users u ON u.device_id = s.subscriber_id
 WHERE s.target_id = $1 AND u.push_token IS NOT NULL;
+
+-- name: DeleteSubscriberHashes :exec
+-- Clears subscriber_id's remembered contact-hash set, so it can be replaced
+-- wholesale with the hashes from its latest MatchContacts call.
+DELETE FROM subscriber_hashes WHERE subscriber_id = $1;
+
+-- name: InsertSubscriberHashes :exec
+-- Records subscriber_id's current contact-hash set, so a future signup
+-- matching one of these hashes can auto-subscribe subscriber_id without it
+-- having to re-sync.
+INSERT INTO subscriber_hashes (subscriber_id, phone_hash)
+SELECT $1, unnest($2::bytea[])
+ON CONFLICT DO NOTHING;
+
+-- name: FindSubscribersByHash :many
+-- Returns every subscriber_id that previously uploaded phone_hash as a
+-- contact, so a brand-new registration can auto-subscribe them immediately.
+SELECT subscriber_id FROM subscriber_hashes WHERE phone_hash = $1;

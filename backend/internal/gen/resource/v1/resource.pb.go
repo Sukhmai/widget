@@ -762,6 +762,62 @@ func (x *GenericMetadata) GetBodyText() string {
 	return ""
 }
 
+// ImageMetadata is stored in the resource.metadata JSONB column when
+// source = "image" and fetched = true — i.e. the pasted URL points directly at
+// an image file (by extension) rather than a page. site_name is derived from
+// the hostname so the card can show a small caption under the image.
+type ImageMetadata struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ImageUrl      string                 `protobuf:"bytes,1,opt,name=image_url,json=imageUrl,proto3" json:"image_url,omitempty"` // the resource URL itself, resolved through redirects
+	SiteName      string                 `protobuf:"bytes,2,opt,name=site_name,json=siteName,proto3" json:"site_name,omitempty"` // hostname the image was hosted on
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ImageMetadata) Reset() {
+	*x = ImageMetadata{}
+	mi := &file_resource_v1_resource_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ImageMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ImageMetadata) ProtoMessage() {}
+
+func (x *ImageMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_resource_v1_resource_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ImageMetadata.ProtoReflect.Descriptor instead.
+func (*ImageMetadata) Descriptor() ([]byte, []int) {
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ImageMetadata) GetImageUrl() string {
+	if x != nil {
+		return x.ImageUrl
+	}
+	return ""
+}
+
+func (x *ImageMetadata) GetSiteName() string {
+	if x != nil {
+		return x.SiteName
+	}
+	return ""
+}
+
 // YouTubeVideoMetadata is stored in the resource.metadata JSONB column when
 // source = "youtube" and fetched = true. Content comes from the YouTube oEmbed
 // endpoint (youtube.com/oembed) — no API key required.
@@ -778,7 +834,7 @@ type YouTubeVideoMetadata struct {
 
 func (x *YouTubeVideoMetadata) Reset() {
 	*x = YouTubeVideoMetadata{}
-	mi := &file_resource_v1_resource_proto_msgTypes[8]
+	mi := &file_resource_v1_resource_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -790,7 +846,7 @@ func (x *YouTubeVideoMetadata) String() string {
 func (*YouTubeVideoMetadata) ProtoMessage() {}
 
 func (x *YouTubeVideoMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_resource_v1_resource_proto_msgTypes[8]
+	mi := &file_resource_v1_resource_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -803,7 +859,7 @@ func (x *YouTubeVideoMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use YouTubeVideoMetadata.ProtoReflect.Descriptor instead.
 func (*YouTubeVideoMetadata) Descriptor() ([]byte, []int) {
-	return file_resource_v1_resource_proto_rawDescGZIP(), []int{8}
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *YouTubeVideoMetadata) GetVideoId() string {
@@ -859,7 +915,7 @@ type SteamGameMetadata struct {
 
 func (x *SteamGameMetadata) Reset() {
 	*x = SteamGameMetadata{}
-	mi := &file_resource_v1_resource_proto_msgTypes[9]
+	mi := &file_resource_v1_resource_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -871,7 +927,7 @@ func (x *SteamGameMetadata) String() string {
 func (*SteamGameMetadata) ProtoMessage() {}
 
 func (x *SteamGameMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_resource_v1_resource_proto_msgTypes[9]
+	mi := &file_resource_v1_resource_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -884,7 +940,7 @@ func (x *SteamGameMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SteamGameMetadata.ProtoReflect.Descriptor instead.
 func (*SteamGameMetadata) Descriptor() ([]byte, []int) {
-	return file_resource_v1_resource_proto_rawDescGZIP(), []int{9}
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *SteamGameMetadata) GetCoverUrl() string {
@@ -953,7 +1009,7 @@ type TikTokVideoMetadata struct {
 
 func (x *TikTokVideoMetadata) Reset() {
 	*x = TikTokVideoMetadata{}
-	mi := &file_resource_v1_resource_proto_msgTypes[10]
+	mi := &file_resource_v1_resource_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -965,7 +1021,7 @@ func (x *TikTokVideoMetadata) String() string {
 func (*TikTokVideoMetadata) ProtoMessage() {}
 
 func (x *TikTokVideoMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_resource_v1_resource_proto_msgTypes[10]
+	mi := &file_resource_v1_resource_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -978,7 +1034,7 @@ func (x *TikTokVideoMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TikTokVideoMetadata.ProtoReflect.Descriptor instead.
 func (*TikTokVideoMetadata) Descriptor() ([]byte, []int) {
-	return file_resource_v1_resource_proto_rawDescGZIP(), []int{10}
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *TikTokVideoMetadata) GetCoverUrl() string {
@@ -1036,7 +1092,7 @@ type AnimeMetadata struct {
 
 func (x *AnimeMetadata) Reset() {
 	*x = AnimeMetadata{}
-	mi := &file_resource_v1_resource_proto_msgTypes[11]
+	mi := &file_resource_v1_resource_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1048,7 +1104,7 @@ func (x *AnimeMetadata) String() string {
 func (*AnimeMetadata) ProtoMessage() {}
 
 func (x *AnimeMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_resource_v1_resource_proto_msgTypes[11]
+	mi := &file_resource_v1_resource_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1061,7 +1117,7 @@ func (x *AnimeMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnimeMetadata.ProtoReflect.Descriptor instead.
 func (*AnimeMetadata) Descriptor() ([]byte, []int) {
-	return file_resource_v1_resource_proto_rawDescGZIP(), []int{11}
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *AnimeMetadata) GetCoverUrl() string {
@@ -1124,7 +1180,7 @@ type RedditPostMetadata struct {
 
 func (x *RedditPostMetadata) Reset() {
 	*x = RedditPostMetadata{}
-	mi := &file_resource_v1_resource_proto_msgTypes[12]
+	mi := &file_resource_v1_resource_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1136,7 +1192,7 @@ func (x *RedditPostMetadata) String() string {
 func (*RedditPostMetadata) ProtoMessage() {}
 
 func (x *RedditPostMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_resource_v1_resource_proto_msgTypes[12]
+	mi := &file_resource_v1_resource_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1149,7 +1205,7 @@ func (x *RedditPostMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RedditPostMetadata.ProtoReflect.Descriptor instead.
 func (*RedditPostMetadata) Descriptor() ([]byte, []int) {
-	return file_resource_v1_resource_proto_rawDescGZIP(), []int{12}
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *RedditPostMetadata) GetTitle() string {
@@ -1213,7 +1269,7 @@ type InstagramPostMetadata struct {
 
 func (x *InstagramPostMetadata) Reset() {
 	*x = InstagramPostMetadata{}
-	mi := &file_resource_v1_resource_proto_msgTypes[13]
+	mi := &file_resource_v1_resource_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1225,7 +1281,7 @@ func (x *InstagramPostMetadata) String() string {
 func (*InstagramPostMetadata) ProtoMessage() {}
 
 func (x *InstagramPostMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_resource_v1_resource_proto_msgTypes[13]
+	mi := &file_resource_v1_resource_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1238,7 +1294,7 @@ func (x *InstagramPostMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InstagramPostMetadata.ProtoReflect.Descriptor instead.
 func (*InstagramPostMetadata) Descriptor() ([]byte, []int) {
-	return file_resource_v1_resource_proto_rawDescGZIP(), []int{13}
+	return file_resource_v1_resource_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *InstagramPostMetadata) GetPostUrl() string {
@@ -1356,7 +1412,10 @@ const file_resource_v1_resource_proto_rawDesc = "" +
 	"\x06author\x18\a \x01(\tR\x06author\x12\x1d\n" +
 	"\n" +
 	"is_article\x18\b \x01(\bR\tisArticle\x12\x1b\n" +
-	"\tbody_text\x18\t \x01(\tR\bbodyText\"\xa4\x01\n" +
+	"\tbody_text\x18\t \x01(\tR\bbodyText\"I\n" +
+	"\rImageMetadata\x12\x1b\n" +
+	"\timage_url\x18\x01 \x01(\tR\bimageUrl\x12\x1b\n" +
+	"\tsite_name\x18\x02 \x01(\tR\bsiteName\"\xa4\x01\n" +
 	"\x14YouTubeVideoMetadata\x12\x19\n" +
 	"\bvideo_id\x18\x01 \x01(\tR\avideoId\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12!\n" +
@@ -1415,7 +1474,7 @@ func file_resource_v1_resource_proto_rawDescGZIP() []byte {
 	return file_resource_v1_resource_proto_rawDescData
 }
 
-var file_resource_v1_resource_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_resource_v1_resource_proto_msgTypes = make([]protoimpl.MessageInfo, 15)
 var file_resource_v1_resource_proto_goTypes = []any{
 	(*MusicTrackMetadata)(nil),    // 0: resource.v1.MusicTrackMetadata
 	(*MovieMetadata)(nil),         // 1: resource.v1.MovieMetadata
@@ -1425,12 +1484,13 @@ var file_resource_v1_resource_proto_goTypes = []any{
 	(*WikipediaMetadata)(nil),     // 5: resource.v1.WikipediaMetadata
 	(*SubstackPostMetadata)(nil),  // 6: resource.v1.SubstackPostMetadata
 	(*GenericMetadata)(nil),       // 7: resource.v1.GenericMetadata
-	(*YouTubeVideoMetadata)(nil),  // 8: resource.v1.YouTubeVideoMetadata
-	(*SteamGameMetadata)(nil),     // 9: resource.v1.SteamGameMetadata
-	(*TikTokVideoMetadata)(nil),   // 10: resource.v1.TikTokVideoMetadata
-	(*AnimeMetadata)(nil),         // 11: resource.v1.AnimeMetadata
-	(*RedditPostMetadata)(nil),    // 12: resource.v1.RedditPostMetadata
-	(*InstagramPostMetadata)(nil), // 13: resource.v1.InstagramPostMetadata
+	(*ImageMetadata)(nil),         // 8: resource.v1.ImageMetadata
+	(*YouTubeVideoMetadata)(nil),  // 9: resource.v1.YouTubeVideoMetadata
+	(*SteamGameMetadata)(nil),     // 10: resource.v1.SteamGameMetadata
+	(*TikTokVideoMetadata)(nil),   // 11: resource.v1.TikTokVideoMetadata
+	(*AnimeMetadata)(nil),         // 12: resource.v1.AnimeMetadata
+	(*RedditPostMetadata)(nil),    // 13: resource.v1.RedditPostMetadata
+	(*InstagramPostMetadata)(nil), // 14: resource.v1.InstagramPostMetadata
 }
 var file_resource_v1_resource_proto_depIdxs = []int32{
 	0, // [0:0] is the sub-list for method output_type
@@ -1451,7 +1511,7 @@ func file_resource_v1_resource_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_resource_v1_resource_proto_rawDesc), len(file_resource_v1_resource_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   14,
+			NumMessages:   15,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

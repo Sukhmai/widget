@@ -14,6 +14,7 @@ import (
 	"github.com/sukhmai/widget/backend/internal/gen/atom/v1/atomv1connect"
 	"github.com/sukhmai/widget/backend/internal/gen/user/v1/userv1connect"
 	"github.com/sukhmai/widget/backend/internal/postgres"
+	"github.com/sukhmai/widget/backend/internal/resource"
 	"github.com/sukhmai/widget/backend/internal/user"
 )
 
@@ -46,13 +47,30 @@ func main() {
 
 	queries := db.New(pool)
 
+	// PreviewResource (synchronous URL preview) needs the same fetchers the
+	// worker uses, keyed by source; see resource.BuildFetchers.
+	clientID := os.Getenv("SPOTIFY_CLIENT_ID")
+	clientSecret := os.Getenv("SPOTIFY_CLIENT_SECRET")
+	if clientID == "" || clientSecret == "" {
+		log.Fatal("SPOTIFY_CLIENT_ID and SPOTIFY_CLIENT_SECRET are required")
+	}
+	tmdbToken := os.Getenv("TMDB_ACCESS_TOKEN")
+	if tmdbToken == "" {
+		log.Fatal("TMDB_ACCESS_TOKEN is required")
+	}
+	fetchers := resource.BuildFetchers(resource.FetcherConfig{
+		SpotifyClientID:     clientID,
+		SpotifyClientSecret: clientSecret,
+		TMDBAccessToken:     tmdbToken,
+	})
+
 	r := chi.NewRouter()
 	r.Get("/healthz", func(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
 
 	// Mount the AtomService connect handler at its RPC path prefix.
-	atomPath, atomHandler := atomv1connect.NewAtomServiceHandler(atom.New(queries, rdb))
+	atomPath, atomHandler := atomv1connect.NewAtomServiceHandler(atom.New(queries, rdb, fetchers))
 	r.Mount(atomPath, atomHandler)
 
 	// Mount the UserService connect handler (registration + contact matching).

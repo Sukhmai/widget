@@ -79,14 +79,18 @@ private func year(_ y: Int32) -> String? { y > 0 ? String(y) : nil }
 public extension AtomCardModel {
     /// Resolve an atom into a card model, mirroring take's `resolveAtomView`.
     init(from atom: Atom_V1_Atom) {
-        let userText = atom.text
+        self.init(from: atom.hasResource ? atom.resource : Atom_V1_Resource(), userText: atom.text)
+    }
+
+    /// Resolve a bare resource — e.g. the live result of `PreviewResource`,
+    /// not yet attached to any atom — into a card model.
+    init(from resource: Atom_V1_Resource, userText: String) {
         func url(_ s: String) -> URL? { s.isEmpty ? nil : URL(string: s) }
 
         // Canonical page for the resource — the tap target for the widget link.
-        let link = url(atom.hasResource ? atom.resource.url : "")
+        let link = url(resource.url)
 
-        guard atom.hasResource, atom.resource.fetched,
-              let meta = atom.resource.metadata else {
+        guard resource.fetched, let meta = resource.metadata else {
             self.init(source: .other, sublayout: .text, coverURL: nil, linkURL: link,
                       title: "", subtitle: "", bodyText: "", userText: userText)
             return
@@ -158,6 +162,9 @@ public extension AtomCardModel {
                           title: g.title.isEmpty ? g.siteName : g.title,
                           subtitle: g.siteName, bodyText: "", userText: userText)
             }
+        case .image(let i):
+            self.init(source: .other, sublayout: .media, coverURL: url(i.imageURL),
+                      title: i.siteName, subtitle: "", bodyText: "", userText: userText)
         case .redditPost(let r):
             self.init(source: .other, sublayout: .text, coverURL: nil,
                       title: r.title, subtitle: joined("u/\(r.author)", "r/\(r.subreddit)"),

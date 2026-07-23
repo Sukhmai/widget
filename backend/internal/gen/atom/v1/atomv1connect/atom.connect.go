@@ -53,6 +53,9 @@ const (
 	AtomServiceUpdateAtomProcedure = "/atom.v1.AtomService/UpdateAtom"
 	// AtomServiceDeleteAtomProcedure is the fully-qualified name of the AtomService's DeleteAtom RPC.
 	AtomServiceDeleteAtomProcedure = "/atom.v1.AtomService/DeleteAtom"
+	// AtomServicePreviewResourceProcedure is the fully-qualified name of the AtomService's
+	// PreviewResource RPC.
+	AtomServicePreviewResourceProcedure = "/atom.v1.AtomService/PreviewResource"
 )
 
 // AtomServiceClient is a client for the atom.v1.AtomService service.
@@ -65,6 +68,7 @@ type AtomServiceClient interface {
 	ListAtomsByUser(context.Context, *connect.Request[v1.ListAtomsByUserRequest]) (*connect.Response[v1.ListAtomsByUserResponse], error)
 	UpdateAtom(context.Context, *connect.Request[v1.UpdateAtomRequest]) (*connect.Response[v1.UpdateAtomResponse], error)
 	DeleteAtom(context.Context, *connect.Request[v1.DeleteAtomRequest]) (*connect.Response[v1.DeleteAtomResponse], error)
+	PreviewResource(context.Context, *connect.Request[v1.PreviewResourceRequest]) (*connect.Response[v1.PreviewResourceResponse], error)
 }
 
 // NewAtomServiceClient constructs a client for the atom.v1.AtomService service. By default, it uses
@@ -126,6 +130,12 @@ func NewAtomServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 			connect.WithSchema(atomServiceMethods.ByName("DeleteAtom")),
 			connect.WithClientOptions(opts...),
 		),
+		previewResource: connect.NewClient[v1.PreviewResourceRequest, v1.PreviewResourceResponse](
+			httpClient,
+			baseURL+AtomServicePreviewResourceProcedure,
+			connect.WithSchema(atomServiceMethods.ByName("PreviewResource")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -139,6 +149,7 @@ type atomServiceClient struct {
 	listAtomsByUser            *connect.Client[v1.ListAtomsByUserRequest, v1.ListAtomsByUserResponse]
 	updateAtom                 *connect.Client[v1.UpdateAtomRequest, v1.UpdateAtomResponse]
 	deleteAtom                 *connect.Client[v1.DeleteAtomRequest, v1.DeleteAtomResponse]
+	previewResource            *connect.Client[v1.PreviewResourceRequest, v1.PreviewResourceResponse]
 }
 
 // CreateAtom calls atom.v1.AtomService.CreateAtom.
@@ -181,6 +192,11 @@ func (c *atomServiceClient) DeleteAtom(ctx context.Context, req *connect.Request
 	return c.deleteAtom.CallUnary(ctx, req)
 }
 
+// PreviewResource calls atom.v1.AtomService.PreviewResource.
+func (c *atomServiceClient) PreviewResource(ctx context.Context, req *connect.Request[v1.PreviewResourceRequest]) (*connect.Response[v1.PreviewResourceResponse], error) {
+	return c.previewResource.CallUnary(ctx, req)
+}
+
 // AtomServiceHandler is an implementation of the atom.v1.AtomService service.
 type AtomServiceHandler interface {
 	CreateAtom(context.Context, *connect.Request[v1.CreateAtomRequest]) (*connect.Response[v1.CreateAtomResponse], error)
@@ -191,6 +207,7 @@ type AtomServiceHandler interface {
 	ListAtomsByUser(context.Context, *connect.Request[v1.ListAtomsByUserRequest]) (*connect.Response[v1.ListAtomsByUserResponse], error)
 	UpdateAtom(context.Context, *connect.Request[v1.UpdateAtomRequest]) (*connect.Response[v1.UpdateAtomResponse], error)
 	DeleteAtom(context.Context, *connect.Request[v1.DeleteAtomRequest]) (*connect.Response[v1.DeleteAtomResponse], error)
+	PreviewResource(context.Context, *connect.Request[v1.PreviewResourceRequest]) (*connect.Response[v1.PreviewResourceResponse], error)
 }
 
 // NewAtomServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -248,6 +265,12 @@ func NewAtomServiceHandler(svc AtomServiceHandler, opts ...connect.HandlerOption
 		connect.WithSchema(atomServiceMethods.ByName("DeleteAtom")),
 		connect.WithHandlerOptions(opts...),
 	)
+	atomServicePreviewResourceHandler := connect.NewUnaryHandler(
+		AtomServicePreviewResourceProcedure,
+		svc.PreviewResource,
+		connect.WithSchema(atomServiceMethods.ByName("PreviewResource")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/atom.v1.AtomService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case AtomServiceCreateAtomProcedure:
@@ -266,6 +289,8 @@ func NewAtomServiceHandler(svc AtomServiceHandler, opts ...connect.HandlerOption
 			atomServiceUpdateAtomHandler.ServeHTTP(w, r)
 		case AtomServiceDeleteAtomProcedure:
 			atomServiceDeleteAtomHandler.ServeHTTP(w, r)
+		case AtomServicePreviewResourceProcedure:
+			atomServicePreviewResourceHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -305,4 +330,8 @@ func (UnimplementedAtomServiceHandler) UpdateAtom(context.Context, *connect.Requ
 
 func (UnimplementedAtomServiceHandler) DeleteAtom(context.Context, *connect.Request[v1.DeleteAtomRequest]) (*connect.Response[v1.DeleteAtomResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("atom.v1.AtomService.DeleteAtom is not implemented"))
+}
+
+func (UnimplementedAtomServiceHandler) PreviewResource(context.Context, *connect.Request[v1.PreviewResourceRequest]) (*connect.Response[v1.PreviewResourceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("atom.v1.AtomService.PreviewResource is not implemented"))
 }

@@ -106,7 +106,9 @@ struct storyEntryView: View {
 
     private func image(from data: Data?) -> Image? {
         #if canImport(UIKit)
-        if let data, let ui = UIImage(data: data) {
+        // Downsampled decode, not UIImage(data:) — the widget extension has a
+        // tight memory ceiling and full-resolution lazy decode risks jetsam.
+        if let data, let ui = ImageDecoding.downsampledImage(from: data, maxDimension: 800) {
             return Image(uiImage: ui)
         }
         #endif

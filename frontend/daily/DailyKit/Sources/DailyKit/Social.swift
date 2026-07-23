@@ -15,6 +15,16 @@ public enum Social {
 
     public static var isRegistered: Bool { !ownNumber.isEmpty }
 
+    private static let lastSyncedAtKey = "DailyKit.lastSyncedAt"
+
+    /// When `syncFriends` last completed, so the app can silently re-sync on
+    /// a throttled cadence (catching new/edited contacts and friends who
+    /// joined since) without re-prompting for Contacts access.
+    public static var lastSyncedAt: Date? {
+        get { AppGroup.defaults.object(forKey: lastSyncedAtKey) as? Date }
+        set { AppGroup.defaults.set(newValue, forKey: lastSyncedAtKey) }
+    }
+
     /// Register (or re-point) this device's discovery key from the stored own
     /// number. No-op if the number is unset or unparseable. Safe to call on every
     /// launch — the backend upserts by device_id.
@@ -71,6 +81,7 @@ public enum Social {
         }
         guard !infoByHash.isEmpty else {
             FriendStore.save([])
+            lastSyncedAt = Date()
             return []
         }
 
@@ -79,6 +90,7 @@ public enum Social {
             $0.subscriberID = DeviceUser.id
         })
         guard let matches = response.message?.matches else { return FriendStore.load() }
+        lastSyncedAt = Date()
 
         let ownID = DeviceUser.id
         var friends: [Friend] = []

@@ -2,6 +2,7 @@ package resource
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 )
@@ -28,13 +29,19 @@ const (
 	SourceAniList     Source = "anilist"
 	SourceBluesky     Source = "bluesky"
 	SourceInstagram   Source = "instagram"
+	SourceImage       Source = "image"
 )
 
 // knownSources is the single allow-list that drives parseSource. Add new
 // Source constants here to keep them in sync.
 var knownSources = []Source{
-	SourceGeneric, SourceSpotify, SourceYouTube, SourceLetterboxd, SourceGoodreads, SourceX, SourceWikipedia, SourceSteam, SourceSubstack, SourceAppleMusic, SourceIMDB, SourceReddit, SourceTikTok, SourceMyAnimeList, SourceAniList, SourceBluesky, SourceInstagram,
+	SourceGeneric, SourceSpotify, SourceYouTube, SourceLetterboxd, SourceGoodreads, SourceX, SourceWikipedia, SourceSteam, SourceSubstack, SourceAppleMusic, SourceIMDB, SourceReddit, SourceTikTok, SourceMyAnimeList, SourceAniList, SourceBluesky, SourceInstagram, SourceImage,
 }
+
+// reImageExt matches a direct link to an image file by its extension, ignoring
+// any query string (e.g. CDN cache-busting params). This mirrors how the
+// frontend's URL_PATTERNS would classify a pasted image link.
+var reImageExt = regexp.MustCompile(`(?i)\.(jpe?g|png|gif|webp|avif|bmp|heic|heif)(\?.*)?$`)
 
 // DetectSource derives a Source from a URL. Always returns a valid Source,
 // falling back to SourceGeneric for unrecognised hosts. Path guards mirror the
@@ -85,6 +92,8 @@ func DetectSource(rawURL string) Source {
 	// 	(strings.Contains(rawURL, "/p/") || strings.Contains(rawURL, "/reel/"))) ||
 	// 	strings.Contains(rawURL, "instagr.am"):
 	// 	return SourceInstagram
+	case reImageExt.MatchString(rawURL):
+		return SourceImage
 	default:
 		return SourceGeneric
 	}

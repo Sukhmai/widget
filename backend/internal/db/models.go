@@ -26,6 +26,11 @@ type Resource struct {
 	CreatedAt pgtype.Timestamptz
 }
 
+type SubscriberHash struct {
+	SubscriberID pgtype.UUID
+	PhoneHash    []byte
+}
+
 type Subscription struct {
 	SubscriberID pgtype.UUID
 	TargetID     pgtype.UUID

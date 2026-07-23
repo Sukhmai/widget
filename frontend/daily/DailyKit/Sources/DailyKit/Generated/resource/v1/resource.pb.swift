@@ -256,6 +256,26 @@ public nonisolated struct Resource_V1_GenericMetadata: Sendable {
   public init() {}
 }
 
+/// ImageMetadata is stored in the resource.metadata JSONB column when
+/// source = "image" and fetched = true — i.e. the pasted URL points directly at
+/// an image file (by extension) rather than a page. site_name is derived from
+/// the hostname so the card can show a small caption under the image.
+public nonisolated struct Resource_V1_ImageMetadata: Sendable {
+  // SwiftProtobuf.Message conformance is added in an extension below. See the
+  // `Message` and `Message+*Additions` files in the SwiftProtobuf library for
+  // methods supported on all messages.
+
+  /// the resource URL itself, resolved through redirects
+  public var imageURL: String = String()
+
+  /// hostname the image was hosted on
+  public var siteName: String = String()
+
+  public var unknownFields = SwiftProtobuf.UnknownStorage()
+
+  public init() {}
+}
+
 /// YouTubeVideoMetadata is stored in the resource.metadata JSONB column when
 /// source = "youtube" and fetched = true. Content comes from the YouTube oEmbed
 /// endpoint (youtube.com/oembed) — no API key required.
@@ -897,6 +917,41 @@ nonisolated extension Resource_V1_GenericMetadata: SwiftProtobuf.Message, SwiftP
     if lhs.author != rhs.author {return false}
     if lhs.isArticle != rhs.isArticle {return false}
     if lhs.bodyText != rhs.bodyText {return false}
+    if lhs.unknownFields != rhs.unknownFields {return false}
+    return true
+  }
+}
+
+nonisolated extension Resource_V1_ImageMetadata: SwiftProtobuf.Message, SwiftProtobuf._MessageImplementationBase, SwiftProtobuf._ProtoNameProviding {
+  public static let protoMessageName: String = _protobuf_package + ".ImageMetadata"
+  public static let _protobuf_nameMap = SwiftProtobuf._NameMap(bytecode: "\0\u{3}image_url\0\u{3}site_name\0")
+
+  public mutating func decodeMessage<D: SwiftProtobuf.Decoder>(decoder: inout D) throws {
+    while let fieldNumber = try decoder.nextFieldNumber() {
+      // The use of inline closures is to circumvent an issue where the compiler
+      // allocates stack space for every case branch when no optimizations are
+      // enabled. https://github.com/apple/swift-protobuf/issues/1034
+      switch fieldNumber {
+      case 1: try { try decoder.decodeSingularStringField(value: &self.imageURL) }()
+      case 2: try { try decoder.decodeSingularStringField(value: &self.siteName) }()
+      default: break
+      }
+    }
+  }
+
+  public func traverse<V: SwiftProtobuf.Visitor>(visitor: inout V) throws {
+    if !self.imageURL.isEmpty {
+      try visitor.visitSingularStringField(value: self.imageURL, fieldNumber: 1)
+    }
+    if !self.siteName.isEmpty {
+      try visitor.visitSingularStringField(value: self.siteName, fieldNumber: 2)
+    }
+    try unknownFields.traverse(visitor: &visitor)
+  }
+
+  public static func ==(lhs: Resource_V1_ImageMetadata, rhs: Resource_V1_ImageMetadata) -> Bool {
+    if lhs.imageURL != rhs.imageURL {return false}
+    if lhs.siteName != rhs.siteName {return false}
     if lhs.unknownFields != rhs.unknownFields {return false}
     return true
   }

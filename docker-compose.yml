@@ -17,5 +17,15 @@ services:
     ports:
       - "6379:6379"
 
+  migrate:
+    build:
+      context: ./backend
+      target: migrate
+    profiles: ["tools"]
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgres://widget:widget@db:5432/widgetdb
+
 volumes:
   postgres_data:

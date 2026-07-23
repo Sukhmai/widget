@@ -110,6 +110,15 @@ message GenericMetadata {
   string body_text   = 9; // full readable body as plain text (articles only)
 }
 
+// ImageMetadata is stored in the resource.metadata JSONB column when
+// source = "image" and fetched = true — i.e. the pasted URL points directly at
+// an image file (by extension) rather than a page. site_name is derived from
+// the hostname so the card can show a small caption under the image.
+message ImageMetadata {
+  string image_url = 1; // the resource URL itself, resolved through redirects
+  string site_name = 2; // hostname the image was hosted on
+}
+
 // YouTubeVideoMetadata is stored in the resource.metadata JSONB column when
 // source = "youtube" and fetched = true. Content comes from the YouTube oEmbed
 // endpoint (youtube.com/oembed) — no API key required.

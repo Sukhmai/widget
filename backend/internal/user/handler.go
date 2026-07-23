@@ -56,6 +56,25 @@ func (h *Handler) RegisterUser(ctx context.Context, req *connect.Request[userv1.
 		return nil, connect.NewError(connect.CodeInternal, err)
 	}
 
+	// Auto-subscribe anyone who already had this number in their contacts as
+	// of their last MatchContacts call -- they shouldn't have to re-sync just
+	// because this user joined after they did.
+	subscribers, err := h.db.FindSubscribersByHash(ctx, req.Msg.PhoneHash)
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	for _, subscriberID := range subscribers {
+		if subscriberID == deviceID {
+			continue
+		}
+		if err := h.db.UpsertSubscription(ctx, db.UpsertSubscriptionParams{
+			SubscriberID: subscriberID,
+			TargetID:     deviceID,
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+	}
+
 	return connect.NewResponse(&userv1.RegisterUserResponse{}), nil
 }
 
@@ -79,6 +98,20 @@ func (h *Handler) MatchContacts(ctx context.Context, req *connect.Request[userv1
 		subscriberID, err = parseUUID(req.Msg.SubscriberId)
 		if err != nil {
 			return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("invalid subscriber_id"))
+		}
+	}
+
+	// Remember this contact-hash set so a friend who joins later can be
+	// auto-subscribed at signup time, without the caller re-syncing.
+	if subscriberID.Valid {
+		if err := h.db.DeleteSubscriberHashes(ctx, subscriberID); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
+		}
+		if err := h.db.InsertSubscriberHashes(ctx, db.InsertSubscriberHashesParams{
+			SubscriberID: subscriberID,
+			Column2:      req.Msg.PhoneHashes,
+		}); err != nil {
+			return nil, connect.NewError(connect.CodeInternal, err)
 		}
 	}
 

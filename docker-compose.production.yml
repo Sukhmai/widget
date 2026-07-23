@@ -15,6 +15,16 @@ services:
     restart: unless-stopped
     # not exposed to host
 
+  migrate:
+    build:
+      context: ./backend
+      target: migrate
+    container_name: widget-migrate
+    profiles: ["tools"]
+    env_file: .env.production
+    depends_on:
+      - db
+
   api:
     build:
       context: ./backend

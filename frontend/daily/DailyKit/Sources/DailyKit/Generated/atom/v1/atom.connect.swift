@@ -58,6 +58,12 @@ public protocol Atom_V1_AtomServiceClientInterface: Sendable {
 
     @available(iOS 13, *)
     func `deleteAtom`(request: Atom_V1_DeleteAtomRequest, headers: Connect.Headers) async -> ResponseMessage<Atom_V1_DeleteAtomResponse>
+
+    @discardableResult
+    func `previewResource`(request: Atom_V1_PreviewResourceRequest, headers: Connect.Headers, completion: @escaping @Sendable (ResponseMessage<Atom_V1_PreviewResourceResponse>) -> Void) -> Connect.Cancelable
+
+    @available(iOS 13, *)
+    func `previewResource`(request: Atom_V1_PreviewResourceRequest, headers: Connect.Headers) async -> ResponseMessage<Atom_V1_PreviewResourceResponse>
 }
 
 /// Concrete implementation of `Atom_V1_AtomServiceClientInterface`.
@@ -148,6 +154,16 @@ public final class Atom_V1_AtomServiceClient: Atom_V1_AtomServiceClientInterface
         return await self.client.unary(path: "/atom.v1.AtomService/DeleteAtom", idempotencyLevel: .unknown, request: request, headers: headers)
     }
 
+    @discardableResult
+    public func `previewResource`(request: Atom_V1_PreviewResourceRequest, headers: Connect.Headers = [:], completion: @escaping @Sendable (ResponseMessage<Atom_V1_PreviewResourceResponse>) -> Void) -> Connect.Cancelable {
+        return self.client.unary(path: "/atom.v1.AtomService/PreviewResource", idempotencyLevel: .unknown, request: request, headers: headers, completion: completion)
+    }
+
+    @available(iOS 13, *)
+    public func `previewResource`(request: Atom_V1_PreviewResourceRequest, headers: Connect.Headers = [:]) async -> ResponseMessage<Atom_V1_PreviewResourceResponse> {
+        return await self.client.unary(path: "/atom.v1.AtomService/PreviewResource", idempotencyLevel: .unknown, request: request, headers: headers)
+    }
+
     public enum Metadata {
         public enum Methods {
             public static let createAtom = Connect.MethodSpec(name: "CreateAtom", service: "atom.v1.AtomService", type: .unary)
@@ -158,6 +174,7 @@ public final class Atom_V1_AtomServiceClient: Atom_V1_AtomServiceClientInterface
             public static let listAtomsByUser = Connect.MethodSpec(name: "ListAtomsByUser", service: "atom.v1.AtomService", type: .unary)
             public static let updateAtom = Connect.MethodSpec(name: "UpdateAtom", service: "atom.v1.AtomService", type: .unary)
             public static let deleteAtom = Connect.MethodSpec(name: "DeleteAtom", service: "atom.v1.AtomService", type: .unary)
+            public static let previewResource = Connect.MethodSpec(name: "PreviewResource", service: "atom.v1.AtomService", type: .unary)
         }
     }
 }

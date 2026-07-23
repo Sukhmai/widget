@@ -76,36 +76,14 @@ func main() {
 	}
 
 
-	// appleMusicKeyID := os.Getenv("APPLE_MUSIC_KEY_ID")
-	// appleMusicTeamID := os.Getenv("APPLE_MUSIC_TEAM_ID")
-	// appleMusicPrivateKey := os.Getenv("APPLE_MUSIC_PRIVATE_KEY")
-	// if appleMusicKeyID == "" || appleMusicTeamID == "" || appleMusicPrivateKey == "" {
-	// 	log.Fatal("APPLE_MUSIC_KEY_ID, APPLE_MUSIC_TEAM_ID, and APPLE_MUSIC_PRIVATE_KEY are required")
-	// }
-	// appleMusicFetcher, err := resource.NewAppleMusicFetcher(appleMusicTeamID, appleMusicKeyID, appleMusicPrivateKey)
-	// if err != nil {
-	// 	log.Fatalf("apple music: %v", err)
-	// }
-
-	worker := resource.NewWorker(rdb, db.New(pool)).
-		WithFetcher(resource.SourceSpotify, resource.NewSpotifyFetcher(clientID, clientSecret)).
-		WithFetcher(resource.SourceLetterboxd, resource.NewLetterboxdFetcher(tmdbToken)).
-		WithFetcher(resource.SourceIMDB, resource.NewIMDBFetcher(tmdbToken)).
-		WithFetcher(resource.SourceGoodreads, resource.NewGoodreadsFetcher()).
-		WithFetcher(resource.SourceX, resource.NewXFetcher()).
-		WithFetcher(resource.SourceYouTube, resource.NewYouTubeFetcher()).
-		WithFetcher(resource.SourceWikipedia, resource.NewWikipediaFetcher()).
-		WithFetcher(resource.SourceSteam, resource.NewSteamFetcher()).
-		WithFetcher(resource.SourceSubstack, resource.NewSubstackFetcher()).
-		// WithFetcher(resource.SourceAppleMusic, appleMusicFetcher).
-		WithFetcher(resource.SourceReddit, resource.NewRedditFetcher()).
-		WithFetcher(resource.SourceTikTok, resource.NewTikTokFetcher()).
-		WithFetcher(resource.SourceMyAnimeList, resource.NewMyAnimeListFetcher()).
-		WithFetcher(resource.SourceAniList, resource.NewAniListFetcher()).
-		WithFetcher(resource.SourceBluesky, resource.NewBlueskyFetcher()).
-		// WithFetcher(resource.SourceInstagram, resource.NewInstagramFetcher()).
-
-		WithFetcher(resource.SourceGeneric, resource.NewGenericFetcher())
+	worker := resource.NewWorker(rdb, db.New(pool))
+	for source, fetcher := range resource.BuildFetchers(resource.FetcherConfig{
+		SpotifyClientID:     clientID,
+		SpotifyClientSecret: clientSecret,
+		TMDBAccessToken:     tmdbToken,
+	}) {
+		worker = worker.WithFetcher(source, fetcher)
+	}
 
 	if pushWorker != nil {
 		go func() {

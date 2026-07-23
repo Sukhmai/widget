@@ -6,16 +6,31 @@ import WidgetKit
 ///   systemMedium → landscape (poster left, meta + text right)
 ///   systemLarge  → tile      (3:2 image on top, meta + text below — large square)
 public struct AtomCardView: View {
-    @Environment(\.widgetFamily) private var family
+    @Environment(\.widgetFamily) private var environmentFamily
     private let model: AtomCardModel
     private let posterImage: Image?
     private let avatarImage: Image?
+    private let familyOverride: WidgetFamily?
 
-    public init(model: AtomCardModel, posterImage: Image?, avatarImage: Image? = nil) {
+    /// `familyOverride` lets a plain (non-widget) SwiftUI view render this
+    /// card as a specific family — e.g. an in-app size preview — without
+    /// WidgetKit's `\.widgetFamily` environment value, which isn't writable
+    /// outside an actual widget extension context.
+    public init(model: AtomCardModel, posterImage: Image?, avatarImage: Image? = nil, familyOverride: WidgetFamily? = nil) {
         self.model = model
         self.posterImage = posterImage
         self.avatarImage = avatarImage
+        self.familyOverride = familyOverride
     }
+
+    private var family: WidgetFamily { familyOverride ?? environmentFamily }
+
+    // `.widgetAccentedRenderingMode` negotiates tinted-home-screen rendering
+    // with the widget host; it's only meaningful inside an actual widget
+    // extension. `familyOverride` is only ever set by a plain in-app preview
+    // (see the doc comment on `init` above), so its presence also tells us
+    // there's no real widget host to negotiate with.
+    private var isWidgetContext: Bool { familyOverride == nil }
 
     public var body: some View {
         // The widget host supplies the background (`.containerBackground`) and the
@@ -34,13 +49,16 @@ public struct AtomCardView: View {
                 // The friend's contact avatar sits in the bottom-right corner of
                 // the whole card, so it shows on every atom — poster or text-only.
                 .overlay(alignment: .bottomTrailing) {
-                    AvatarBadge(image: avatarImage, diameter: badgeDiameter(in: proxy.size))
+                    AvatarBadge(image: avatarImage, diameter: badgeDiameter(in: proxy.size), isWidgetContext: isWidgetContext)
                         .padding(Theme.space3)
                 }
         }
         // A widget's default tap opens the container app; make the whole card
         // open the resource page instead — the native single-tap-target pattern.
-        .widgetURL(model.linkURL)
+        // Widget-host-only, like widgetAccentedRenderingMode below: outside an
+        // actual widget extension there's no host to consume this, and passing
+        // a real URL here caused it to intercept taps meant for sibling controls.
+        .widgetURL(isWidgetContext ? model.linkURL : nil)
     }
 
     /// Avatar size scales with the card but stays within a sensible badge range.
@@ -65,7 +83,7 @@ public struct AtomCardView: View {
         let side = min(size.height - Theme.space3 * 2, size.width * 0.5)
         return HStack(alignment: .top, spacing: Theme.space3) {
             if model.hasCover {
-                PosterView(image: posterImage).frame(width: side, height: side)
+                PosterView(image: posterImage, isWidgetContext: isWidgetContext).frame(width: side, height: side)
             }
             VStack(alignment: .leading, spacing: Theme.space2) {
                 MetaView(model: model, showSubtitle: !model.subtitle.isEmpty)
@@ -83,7 +101,7 @@ public struct AtomCardView: View {
         let imageHeight = (size.width - Theme.space3 * 2) * (2.0 / 3.0)
         return VStack(alignment: .leading, spacing: Theme.space3) {
             if model.hasCover {
-                PosterView(image: posterImage)
+                PosterView(image: posterImage, isWidgetContext: isWidgetContext)
                     .frame(maxWidth: .infinity)
                     .frame(height: imageHeight)
             }
@@ -117,6 +135,7 @@ public struct AtomCardView: View {
 /// Rounded cover image with a gray placeholder while the poster is unavailable.
 struct PosterView: View {
     let image: Image?
+    var isWidgetContext: Bool = true
 
     var body: some View {
         // `Color.clear` adopts the caller's proposed size (120×120 in the tile /
@@ -129,10 +148,16 @@ struct PosterView: View {
                 if let image {
                     // Tinted home screens flatten widget content to a monochrome
                     // wash by default; the poster art is a photo, not chrome, so
-                    // it should stay full color even in tinted mode.
-                    image.resizable()
-                        .widgetAccentedRenderingMode(.fullColor)
-                        .scaledToFill()
+                    // it should stay full color even in tinted mode. Only meaningful
+                    // (and safe) inside an actual widget host — see isWidgetContext.
+                    if isWidgetContext {
+                        image.resizable()
+                            .widgetAccentedRenderingMode(.fullColor)
+                            .scaledToFill()
+                    } else {
+                        image.resizable()
+                            .scaledToFill()
+                    }
                 } else {
                     Theme.surface
                 }
@@ -146,15 +171,22 @@ struct PosterView: View {
 struct AvatarBadge: View {
     let image: Image?
     let diameter: CGFloat
+    var isWidgetContext: Bool = true
 
     var body: some View {
         Group {
             if let image {
                 // Same reasoning as the poster: a contact photo should render
                 // full color rather than get tinted to the home screen's accent.
-                image.resizable()
-                    .widgetAccentedRenderingMode(.fullColor)
-                    .scaledToFill()
+                // Only meaningful (and safe) inside an actual widget host.
+                if isWidgetContext {
+                    image.resizable()
+                        .widgetAccentedRenderingMode(.fullColor)
+                        .scaledToFill()
+                } else {
+                    image.resizable()
+                        .scaledToFill()
+                }
             } else {
                 Theme.surface.overlay {
                     Image(systemName: "person.fill")

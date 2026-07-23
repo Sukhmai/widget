@@ -11,6 +11,62 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const deleteSubscriberHashes = `-- name: DeleteSubscriberHashes :exec
+DELETE FROM subscriber_hashes WHERE subscriber_id = $1
+`
+
+// Clears subscriber_id's remembered contact-hash set, so it can be replaced
+// wholesale with the hashes from its latest MatchContacts call.
+func (q *Queries) DeleteSubscriberHashes(ctx context.Context, subscriberID pgtype.UUID) error {
+	_, err := q.db.Exec(ctx, deleteSubscriberHashes, subscriberID)
+	return err
+}
+
+const findSubscribersByHash = `-- name: FindSubscribersByHash :many
+SELECT subscriber_id FROM subscriber_hashes WHERE phone_hash = $1
+`
+
+// Returns every subscriber_id that previously uploaded phone_hash as a
+// contact, so a brand-new registration can auto-subscribe them immediately.
+func (q *Queries) FindSubscribersByHash(ctx context.Context, phoneHash []byte) ([]pgtype.UUID, error) {
+	rows, err := q.db.Query(ctx, findSubscribersByHash, phoneHash)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []pgtype.UUID
+	for rows.Next() {
+		var subscriber_id pgtype.UUID
+		if err := rows.Scan(&subscriber_id); err != nil {
+			return nil, err
+		}
+		items = append(items, subscriber_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const insertSubscriberHashes = `-- name: InsertSubscriberHashes :exec
+INSERT INTO subscriber_hashes (subscriber_id, phone_hash)
+SELECT $1, unnest($2::bytea[])
+ON CONFLICT DO NOTHING
+`
+
+type InsertSubscriberHashesParams struct {
+	SubscriberID pgtype.UUID
+	Column2      [][]byte
+}
+
+// Records subscriber_id's current contact-hash set, so a future signup
+// matching one of these hashes can auto-subscribe subscriber_id without it
+// having to re-sync.
+func (q *Queries) InsertSubscriberHashes(ctx context.Context, arg InsertSubscriberHashesParams) error {
+	_, err := q.db.Exec(ctx, insertSubscriberHashes, arg.SubscriberID, arg.Column2)
+	return err
+}
+
 const listSubscriberPushTokens = `-- name: ListSubscriberPushTokens :many
 SELECT u.push_token FROM subscriptions s
 JOIN users u ON u.device_id = s.subscriber_id

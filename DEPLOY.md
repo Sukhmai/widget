@@ -175,13 +175,14 @@ ssh root@<droplet-ip>
 cd /opt/widget
 git pull
 
-# Build the api/worker images from source
+# Build the api/worker/migrate images from source
 docker compose -f docker-compose.production.yml --env-file .env.production build
 
-# First deploy only: create the schema (no migration tooling yet, same as take)
+# Apply any pending schema migrations (safe to run on every deploy, including
+# the first — see "Database migrations" below)
 docker compose -f docker-compose.production.yml --env-file .env.production up -d db
-docker exec -i $(docker compose -f docker-compose.production.yml ps -q db) \
-  psql -U widget -d widgetdb < backend/sql/schema.sql
+docker compose -f docker-compose.production.yml --env-file .env.production \
+  --profile tools run --rm migrate
 
 # Start everything
 docker compose -f docker-compose.production.yml --env-file .env.production up -d
@@ -202,6 +203,51 @@ curl -I https://widget.tessera.love/healthz
 # On the droplet, after a git pull
 docker compose -f docker-compose.production.yml --env-file .env.production build api
 docker compose -f docker-compose.production.yml --env-file .env.production up -d api
+```
+
+If the pulled changes include a new file under `backend/sql/migrations/`, run
+the migration step from "Deploy to droplet" above (rebuild + run `migrate`)
+before restarting the service that depends on the new schema.
+
+## Database migrations
+
+Schema changes are tracked with [goose](https://github.com/pressly/goose) as
+plain SQL files in `backend/sql/migrations/`, applied via a one-off
+`migrate` container built from the same `backend/Dockerfile` (see the
+`migrate` target). It's given the `tools` profile so it never starts with
+plain `up -d`; it only runs when explicitly invoked with `--profile tools run`.
+
+Rerunning `migrate` is always safe — goose tracks applied versions in a
+`goose_db_version` table and skips anything already applied, so it can be run
+on every deploy (including ones with no new migrations) without side effects.
+
+To add a new migration:
+
+```bash
+# Locally, from backend/
+go run github.com/pressly/goose/v3/cmd/goose@v3.27.3 \
+  -dir sql/migrations create <name> sql
+```
+
+This creates `sql/migrations/000N_<name>.sql` with `-- +goose Up` / `-- +goose
+Down` sections to fill in. `sqlc generate` reads this directory directly (see
+`sqlc.yaml`), so schema and queries stay in sync automatically — there's no
+separate `schema.sql` to hand-update.
+
+To apply migrations against the droplet:
+
+```bash
+# On the droplet, after a git pull
+docker compose -f docker-compose.production.yml --env-file .env.production build migrate
+docker compose -f docker-compose.production.yml --env-file .env.production \
+  --profile tools run --rm migrate
+```
+
+To check the database's current migration version without applying anything:
+
+```bash
+docker compose -f docker-compose.production.yml --env-file .env.production \
+  --profile tools run --rm migrate status
 ```
 
 ## Logs
