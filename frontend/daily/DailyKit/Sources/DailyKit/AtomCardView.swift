@@ -69,9 +69,10 @@ public struct AtomCardView: View {
     @ViewBuilder
     private func content(in size: CGSize) -> some View {
         switch family {
-        // The small widget has no room to render user/body text legibly, so it
-        // shows just the image + meta.
-        case .systemSmall:  tile(in: size, textLineLimit: nil)
+        // The small widget has no room for both a cover image and body text
+        // legibly, so text only shows when there's no image taking up space
+        // (e.g. articles/tweets with no poster).
+        case .systemSmall:  tile(in: size, textLineLimit: model.hasCover ? nil : 3)
         case .systemLarge:  tile(in: size, textLineLimit: 4)
         default:            landscape(in: size)
         }
