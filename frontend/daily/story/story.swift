@@ -20,15 +20,14 @@ struct Provider: AppIntentTimelineProvider {
 
     func timeline(for configuration: SelectFriendIntent, in context: Context) async -> Timeline<StoryEntry> {
         let entry = await fetchEntry(for: configuration)
-        // Refresh roughly every 15 minutes to pick up a newly posted atom, a
-        // resource the worker has since fetched, or advance the story cycle.
+        // Refresh roughly every 15 minutes to pick up a newly posted atom or
+        // a resource the worker has since fetched.
         let next = Calendar.current.date(byAdding: .minute, value: 15, to: Date())!
         return Timeline(entries: [entry], policy: .after(next))
     }
 
     /// Resolve which scope to show (a pinned friend, or the merged "All"
-    /// feed), fetch its active (last-24h) atoms, resolve the scope's story
-    /// stack to pick which one to show, then fetch its poster.
+    /// feed), fetch its active (last-24h) atoms, and show the latest one.
     private func fetchEntry(for configuration: SelectFriendIntent) async -> StoryEntry {
         let scope = resolveScope(configuration)
         let client = DailyAPI.atomClient()
@@ -53,8 +52,7 @@ struct Provider: AppIntentTimelineProvider {
             atoms = response.message?.atoms ?? []
         }
 
-        guard let topID = StoryProgress.resolveTop(freshAtomIDs: atoms.map(\.id), scope: scope),
-              let atom = atoms.first(where: { $0.id == topID }) else {
+        guard let atom = atoms.first else {
             return StoryEntry(date: Date(), model: nil, posterData: nil, avatarData: avatarData)
         }
 
@@ -63,9 +61,6 @@ struct Provider: AppIntentTimelineProvider {
         }
 
         let model = AtomCardModel(from: atom)
-        if let linkURL = model.linkURL {
-            StoryProgress.setTopURL(linkURL.absoluteString, for: scope)
-        }
         var posterData: Data?
         if let url = model.coverURL {
             posterData = try? await URLSession.shared.data(from: url).0
@@ -116,7 +111,7 @@ struct storyEntryView: View {
     }
 
     private var emptyState: some View {
-        Text("No atom yet")
+        Text("Nothing to share apparently")
             .font(.footnote)
             .foregroundStyle(Theme.textMuted)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -132,7 +127,7 @@ struct story: Widget {
                 .containerBackground(Theme.card, for: .widget)
         }
         .configurationDisplayName("Daily")
-        .description("A friend's links, or everyone's, cycling through the last 24 hours.")
+        .description("A friend's latest link, or everyone's, from the last 24 hours.")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         .contentMarginsDisabled()
     }

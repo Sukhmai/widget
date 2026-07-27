@@ -86,13 +86,6 @@ struct ContentView: View {
                 .onTapGesture { focusedField = nil }
             }
             .navigationTitle("Daily")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink { FriendsView() } label: {
-                        Image(systemName: "person.2")
-                    }
-                }
-            }
         }
         // A widget tap always launches this app and delivers its `widgetURL` here
         // — iOS never opens Safari itself. Bounce web links back out to the browser
@@ -101,10 +94,9 @@ struct ContentView: View {
             if incoming.scheme == "http" || incoming.scheme == "https" {
                 openURL(incoming)
             }
-            handleWidgetTap(url: incoming.absoluteString)
         }
         // Re-register this device's discovery key on launch (no-op until the user
-        // has entered their own number in FriendsView).
+        // has entered their own number in Settings).
         .task {
             if Social.isRegistered { await Social.register() }
             await syncFriendsIfDue()
@@ -147,32 +139,6 @@ struct ContentView: View {
         url = ""
         text = ""
         WidgetCenter.shared.reloadAllTimelines()
-    }
-
-    /// A story widget tap always lands here via onOpenURL before the URL
-    /// bounces out. The tapped URL is matched back against each scope's
-    /// top-of-stack URL (recorded by story.swift's Provider) to find which
-    /// scope(s) it came from — usually exactly one, but resources are
-    /// deduplicated by URL server-side, so two friends sharing the same link
-    /// can both match; we mark/pop both rather than guessing.
-    ///
-    /// `reloadTimelines(ofKind:)` re-renders *every* story widget instance,
-    /// including ones showing unrelated scopes — WidgetKit has no API to
-    /// target a single configured instance. Marking viewed is already scoped
-    /// to the matched scope(s) via the URL match above; `requestPop` scopes
-    /// the pop the same way, so untapped instances that get swept up in the
-    /// reload just re-render their current top instead of popping early
-    /// (see StoryProgress.resolveTop).
-    private func handleWidgetTap(url: String) {
-        let scopes = StoryProgress.scopesShowing(url: url)
-        for scope in scopes {
-            if let atomID = StoryProgress.top(for: scope) {
-                StoryProgress.markViewed(atomID)
-            }
-            StoryProgress.requestPop(for: scope)
-        }
-        guard !scopes.isEmpty else { return }
-        WidgetCenter.shared.reloadTimelines(ofKind: "story")
     }
 }
 
