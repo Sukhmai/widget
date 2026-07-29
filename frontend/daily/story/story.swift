@@ -115,6 +115,13 @@ struct storyEntryView: View {
             .font(.footnote)
             .foregroundStyle(Theme.textMuted)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // No atom means no link to open, so give the empty state the same
+            // dedicated compose tap target the card view gets — otherwise
+            // there'd be no way to post from here at all.
+            .overlay(alignment: .topTrailing) {
+                PostButton(diameter: 32)
+                    .padding(Theme.space3)
+            }
     }
 }
 

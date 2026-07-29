@@ -44,6 +44,10 @@ playground.xcworkspace
 
 .build/
 
+# Local xcodebuild product/intermediates dir (created when SYMROOT/BUILD_DIR
+# isn't redirected to DerivedData, e.g. plain `xcodebuild build` from the CLI)
+build/
+
 # CocoaPods
 #
 # We recommend against adding the Pods directory to your .gitignore. However

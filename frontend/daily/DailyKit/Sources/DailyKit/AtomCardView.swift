@@ -52,6 +52,16 @@ public struct AtomCardView: View {
                     AvatarBadge(image: avatarImage, diameter: badgeDiameter(in: proxy.size), isWidgetContext: isWidgetContext)
                         .padding(Theme.space3)
                 }
+                // A small dedicated tap target for composing, separate from the
+                // card-wide tap that opens the shown link. Widget-host-only: a
+                // `Link` here has no effect (and no reason to render) inside the
+                // app's own in-app previews, same as widgetAccentedRenderingMode.
+                .overlay(alignment: .topTrailing) {
+                    if isWidgetContext {
+                        PostButton(diameter: badgeDiameter(in: proxy.size))
+                            .padding(Theme.space3)
+                    }
+                }
         }
         // A widget's default tap opens the container app; make the whole card
         // open the resource page instead — the native single-tap-target pattern.
@@ -189,17 +199,55 @@ struct AvatarBadge: View {
                         .scaledToFill()
                 }
             } else {
-                Theme.surface.overlay {
-                    Image(systemName: "person.fill")
-                        .font(.system(size: diameter * 0.5))
-                        .foregroundStyle(Theme.textMuted)
-                }
+                // `AccessoryWidgetBackground` turned out to be Lock-Screen/watch-only —
+                // it draws nothing on the systemSmall/Medium/Large families this badge
+                // actually appears in. A translucent (not opaque) fill survives a tinted
+                // home screen's desaturation instead of flattening to solid white the
+                // way `Theme.surface` did; `.widgetAccentable()` on the glyph opts it
+                // into the accent-color pass so it isn't just dimmed to invisible too.
+                Circle()
+                    .fill(.primary.opacity(0.12))
+                    .overlay {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: diameter * 0.5))
+                            .foregroundStyle(Theme.textMuted)
+                            .widgetAccentable()
+                    }
             }
         }
         .frame(width: diameter, height: diameter)
         .clipShape(Circle())
         .overlay(Circle().strokeBorder(.white.opacity(0.9), lineWidth: 1.5))
         .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+    }
+}
+
+/// A small circular "+" tap target, distinct from the card-wide tap. Wrapping
+/// it in `Link` gives it its own tap region that wins over `.widgetURL` for
+/// just these bounds, so tapping it opens the composer instead of the atom's link.
+public struct PostButton: View {
+    let diameter: CGFloat
+
+    public init(diameter: CGFloat) {
+        self.diameter = diameter
+    }
+
+    public var body: some View {
+        Link(destination: DailyDeepLink.post) {
+            // Same reasoning as AvatarBadge's fallback glyph — see that comment.
+            // `AccessoryWidgetBackground` doesn't render outside the Lock Screen/watch
+            // accessory families, so a translucent fill + `.widgetAccentable()` glyph
+            // is what actually survives a tinted home screen here.
+            Circle()
+                .fill(.primary.opacity(0.12))
+                .overlay {
+                    Image(systemName: "plus")
+                        .font(.system(size: diameter * 0.5, weight: .semibold))
+                        .foregroundStyle(Theme.text)
+                        .widgetAccentable()
+                }
+        }
+        .frame(width: diameter, height: diameter)
     }
 }
 

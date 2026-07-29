@@ -19,6 +19,7 @@ struct FriendHistoryView: View {
     @State private var isLoadingPage = false
     @State private var loadFailed = false
     @State private var family: WidgetFamily = .systemMedium
+    @State private var avatarImage: Image?
 
     // Same approximate widget point sizes LinkPreviewView uses for its size
     // picker, so a friend's history reads exactly like the compose preview.
@@ -52,11 +53,10 @@ struct FriendHistoryView: View {
 
                 LazyVGrid(columns: columns, spacing: 12) {
                     ForEach(rows) { row in
-                        AtomCardView(model: row.model, posterImage: row.posterImage, familyOverride: family)
+                        card(for: row)
                             .frame(width: cardSize.width, height: cardSize.height)
                             .background(Theme.card)
                             .clipShape(RoundedRectangle(cornerRadius: 22))
-                            .allowsHitTesting(false)
                             .onAppear {
                                 if row.id == rows.last?.id { Task { await loadNextPageIfNeeded() } }
                             }
@@ -75,7 +75,29 @@ struct FriendHistoryView: View {
         }
         .background(Theme.surface)
         .navigationTitle(title)
-        .task { await loadNextPageIfNeeded() }
+        .task {
+            loadAvatar()
+            await loadNextPageIfNeeded()
+        }
+    }
+
+    private func loadAvatar() {
+        guard let data = FriendStore.friend(withID: userID)?.avatar else { return }
+        #if canImport(UIKit)
+        if let ui = ImageDecoding.downsampledImage(from: data, maxDimension: 800) {
+            avatarImage = Image(uiImage: ui)
+        }
+        #endif
+    }
+
+    @ViewBuilder
+    private func card(for row: HistoryRow) -> some View {
+        let card = AtomCardView(model: row.model, posterImage: row.posterImage, avatarImage: avatarImage, familyOverride: family)
+        if let linkURL = row.model.linkURL {
+            Link(destination: linkURL) { card }
+        } else {
+            card
+        }
     }
 
     private func loadNextPageIfNeeded() async {

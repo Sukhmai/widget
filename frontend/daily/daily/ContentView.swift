@@ -10,7 +10,6 @@ import WidgetKit
 import DailyKit
 
 struct ContentView: View {
-    @Environment(\.openURL) private var openURL
     @State private var url = ""
     @State private var text = ""
     @State private var status: String?
@@ -86,14 +85,6 @@ struct ContentView: View {
                 .onTapGesture { focusedField = nil }
             }
             .navigationTitle("Daily")
-        }
-        // A widget tap always launches this app and delivers its `widgetURL` here
-        // — iOS never opens Safari itself. Bounce web links back out to the browser
-        // (or the app that owns the universal link).
-        .onOpenURL { incoming in
-            if incoming.scheme == "http" || incoming.scheme == "https" {
-                openURL(incoming)
-            }
         }
         // Re-register this device's discovery key on launch (no-op until the user
         // has entered their own number in Settings).

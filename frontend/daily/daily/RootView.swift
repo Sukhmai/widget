@@ -9,6 +9,7 @@
 import SwiftUI
 
 struct RootView: View {
+    @Environment(\.openURL) private var openURL
     @State private var selection: Tab = .post
 
     private enum Tab {
@@ -28,6 +29,18 @@ struct RootView: View {
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(Tab.settings)
+        }
+        // A widget tap always launches this app and delivers its `widgetURL`
+        // here — iOS never opens Safari itself. Bounce web links back out to
+        // the browser (or the app that owns the universal link); the
+        // `daily://post` scheme is the widget's own compose shortcut, so it
+        // just selects the Post tab instead.
+        .onOpenURL { incoming in
+            if incoming.scheme == "http" || incoming.scheme == "https" {
+                openURL(incoming)
+            } else if incoming.scheme == "daily", incoming.host == "post" {
+                selection = .post
+            }
         }
     }
 }
